@@ -4,18 +4,18 @@ using UniRx;
 namespace Coft.Signals
 {
     [Serializable]
-    public class FloatSignal : Signal<float>
+    public class FloatSignal2 : Signal2<float>
     {
-        public FloatSignal()
+        public FloatSignal2()
         {
         }
 
-        public FloatSignal(float initialValue)
+        public FloatSignal2(float initialValue)
             : base(initialValue)
         {
         }
 
-        public FloatSignal(ReactiveProperty<float> property)
+        public FloatSignal2(ReactiveProperty<float> property)
             : base(property)
         {
         }

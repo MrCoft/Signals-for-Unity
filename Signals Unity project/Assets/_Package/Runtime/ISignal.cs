@@ -1,6 +1,6 @@
 ﻿namespace Coft.Signals
 {
-    public interface IReactiveValue<T> : IReadOnlyReactiveValue<T>
+    public interface ISignal<T> : IReadOnlySignal<T>
     {
         public T Value { get; set; }
     }

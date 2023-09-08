@@ -4,13 +4,13 @@ using UniRx;
 
 namespace Coft.Signals
 {
-    public class Effect
+    public class Effect2
     {
         private readonly Action _action;
         private readonly HashSet<IObservable<Unit>> _allDependencies;
         private readonly HashSet<IObservable<Unit>> _currentDependencies;
 
-        public Effect(Action action)
+        public Effect2(Action action)
         {
             _action = action;
             _allDependencies = new HashSet<IObservable<Unit>>();
