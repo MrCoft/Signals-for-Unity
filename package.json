@@ -1,7 +1,7 @@
 {
-  "name": "Asset Collection",
+  "name": "Signals",
   "version": "0.0.1",
-  "displayName": "Asset Collection",
+  "displayName": "Signals",
   "description": "This is an example package",
   "author": {
     "name": "Ondřej Műller",

@@ -1,7 +1,7 @@
 {
-  "name": "com.coft.asset-collection",
+  "name": "com.coft.signals",
   "version": "0.0.1",
-  "displayName": "Asset Collection",
+  "displayName": "Signals",
   "description": "List of assets matching a query with automatic updates",
   "author": {
     "name": "Ondřej Műller",
