@@ -23,7 +23,7 @@ namespace Coft.Signals
 
         public IReadOnlyReactiveValue<T> Computed<T>(Func<T> getter)
         {
-
+            return null;
         }
 
         public void Effect(Action action)
