@@ -1,5 +1,5 @@
 {
-    "name": "Unity.Signals.Editor",
+    "name": "Coft.Signals",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
