@@ -10,7 +10,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void DoesntRunImmediately()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var x = 0;
             signals.Effect(DefaultTiming, () => x = 1);
             Assert.AreEqual(0, x);
@@ -19,7 +19,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void RunsOnUpdate()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var x = 0;
             signals.Effect(DefaultTiming, () => x = 1);
             signals.Update(DefaultTiming);
@@ -29,7 +29,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void RunsOnChange()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = value.Value);
@@ -42,7 +42,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void DoesntRunOnUnrelatedChange()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var effectHasRun = false;
             signals.Effect(DefaultTiming, () => effectHasRun = true);
@@ -56,7 +56,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void ChangesDependencies()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var condition = signals.Signal(DefaultTiming, true);
             var value1 = signals.Signal(DefaultTiming, 1);
             var value2 = signals.Signal(DefaultTiming, 2);
@@ -82,7 +82,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void DetectsInfiniteLoop()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             signals.Effect(DefaultTiming, () => value.Value += 1);
             Assert.Throws<Exception>(() =>
@@ -94,7 +94,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void SkipsBroken()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var effectHasRun = false;
             signals.Effect(DefaultTiming, () => throw new Exception());
             signals.Effect(DefaultTiming, () => effectHasRun = true);

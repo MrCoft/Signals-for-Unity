@@ -9,7 +9,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void WriteIsDelayed()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             Assert.AreEqual(1, value.Value);
             value.Value = 2;
@@ -21,7 +21,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void SameValueWriteIsIgnored()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = value.Value);
@@ -34,7 +34,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void EventsDontMultiply()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var computed = signals.Computed(DefaultTiming, () => value.Value * 2);
             var x = 0;

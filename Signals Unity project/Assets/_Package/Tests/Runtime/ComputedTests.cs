@@ -10,7 +10,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void Works()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var computed = signals.Computed(DefaultTiming, () => value.Value * 2);
             signals.Update(DefaultTiming);
@@ -23,7 +23,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void SortsDependencies()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var a = signals.Computed(DefaultTiming, () => value.Value * 2);
             var b = signals.Computed(DefaultTiming, () => a.Value + 1);
@@ -36,7 +36,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void DetectsCyclicDependencies()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var a = signals.Computed(DefaultTiming, () => value.Value);
             var b = signals.Computed(DefaultTiming, () => a.Value + 1);
@@ -51,7 +51,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void SameValueIsIgnored()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var square = signals.Computed(DefaultTiming, () => value.Value * value.Value);
             var x = 0;
@@ -67,7 +67,7 @@ namespace Coft.Signals.Tests
         [Test]
         public void SkipsBroken()
         {
-            var signals = new SignalManager();
+            var signals = new SignalContext();
             var computedBroken = signals.Computed<int>(DefaultTiming, () => throw new Exception());
             var computed = signals.Computed(DefaultTiming, () => 1);
             try

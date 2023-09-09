@@ -5,7 +5,7 @@ namespace Coft.Signals
 {
     public class Signal<T> : ISignal<T>, IUntypedSignal where T : IEquatable<T>
     {
-        private SignalManager _manager;
+        private SignalContext _context;
 
         public int Timing;
 
@@ -16,9 +16,9 @@ namespace Coft.Signals
         private T _newValue;
         public HashSet<IUntypedSignal> Subscribers { get; }
 
-        public Signal(SignalManager manager, int timing, T value)
+        public Signal(SignalContext context, int timing, T value)
         {
-            _manager = manager;
+            _context = context;
             Timing = timing;
             
             _cachedValue = value;
@@ -32,7 +32,7 @@ namespace Coft.Signals
         {
             get
             {
-                _manager.DependenciesCollector.Add(this);
+                _context.DependenciesCollector.Add(this);
                 return _cachedValue;
             }
             set

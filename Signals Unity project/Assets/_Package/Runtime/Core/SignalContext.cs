@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Coft.Signals
 {
-    public class SignalManager
+    public class SignalContext
     {
         public HashSet<IUntypedSignal> DependenciesCollector = new();
         public bool IsDirty;
@@ -29,7 +29,7 @@ namespace Coft.Signals
 
         public IReadOnlySignal<T> Computed<T>(int timing, Func<T> getter)
         {
-            var computed = new ComputedSignal<T>(this, timing, getter);
+            var computed = new Computed<T>(this, timing, getter);
             
             if (_timingToComputedsDict.ContainsKey(timing) == false)
             {

@@ -5,7 +5,7 @@ namespace Coft.Signals
 {
     public class Effect
     {
-        private SignalManager _manager;
+        private SignalContext _context;
 
         public int Timing;
         
@@ -13,9 +13,9 @@ namespace Coft.Signals
         private readonly HashSet<IUntypedSignal> _allDependencies;
         public HashSet<IUntypedSignal> _currentDependencies;
 
-        public Effect(SignalManager manager, int timing, Action action)
+        public Effect(SignalContext context, int timing, Action action)
         {
-            _manager = manager;
+            _context = context;
             Timing = timing;
             _action = action;
             _allDependencies = new HashSet<IUntypedSignal>();
@@ -27,9 +27,9 @@ namespace Coft.Signals
         public void Run()
         {
             _currentDependencies.Clear();
-            _manager.DependenciesCollector.Clear();
+            _context.DependenciesCollector.Clear();
             _action();
-            foreach (var signal in _manager.DependenciesCollector)
+            foreach (var signal in _context.DependenciesCollector)
             {
                 if (_allDependencies.Add(signal)) Register(signal);
                 _currentDependencies.Add(signal);

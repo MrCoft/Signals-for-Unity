@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace Coft.Signals
 {
-    public class ComputedSignal<T> : IUntypedSignal, IUntypedComputed, IReadOnlySignal<T>
+    public class Computed<T> : IUntypedSignal, IUntypedComputed, IReadOnlySignal<T>
     {
-        private SignalManager _manager;
+        private SignalContext _context;
 
         public int Timing;
 
@@ -19,9 +19,9 @@ namespace Coft.Signals
         public bool IsReady { get; set; }
         public HashSet<IUntypedSignal> Subscribers { get; }
         
-        public ComputedSignal(SignalManager manager, int timing, Func<T> getter)
+        public Computed(SignalContext context, int timing, Func<T> getter)
         {
-            _manager = manager;
+            _context = context;
             Timing = timing;
             _getter = getter;
             Dependencies = new();
@@ -37,7 +37,7 @@ namespace Coft.Signals
         {
             get
             {
-                _manager.DependenciesCollector.Add(this);
+                _context.DependenciesCollector.Add(this);
                 return _cachedValue;
             }
         }
@@ -50,12 +50,12 @@ namespace Coft.Signals
         {
             Dependencies.Clear();
             // _currentDependencies.Clear();
-            _manager.DependenciesCollector.Clear();
+            _context.DependenciesCollector.Clear();
             // _action();
             var newValue = _getter();
             HasChangedThisPass = _cachedValue.Equals(newValue) == false;
             _cachedValue = newValue;
-            foreach (var signal in _manager.DependenciesCollector)
+            foreach (var signal in _context.DependenciesCollector)
             {
                 // if (_allDependencies.Add(signal)) Register(signal);
                 // _currentDependencies.Add(signal);
