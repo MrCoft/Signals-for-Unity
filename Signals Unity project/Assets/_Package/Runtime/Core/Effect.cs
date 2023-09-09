@@ -24,6 +24,10 @@ namespace Coft.Signals
         public void Dispose()
         {
             _context.TimingToDirtyEffectsDict[Timing].Remove(this);
+            foreach (var signal in Dependencies)
+            {
+                signal.EffectSubscribers.Remove(this);
+            }
         }
 
         ~Effect()
@@ -33,6 +37,11 @@ namespace Coft.Signals
 
         public void Run()
         {
+            foreach (var signal in Dependencies)
+            {
+                signal.EffectSubscribers.Remove(this);
+            }
+            
             Dependencies.Clear();
             _context.DependenciesCollector.Clear();
             _action();

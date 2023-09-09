@@ -25,6 +25,7 @@ namespace Coft.Signals.Tests
             var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = value.Value);
+            signals.Update(DefaultTiming);
             x = 0;
             value.Value = 1;
             signals.Update(DefaultTiming);
@@ -49,7 +50,7 @@ namespace Coft.Signals.Tests
         }
         
         [Test]
-        public void SignalsDispose()
+        public void Dispose()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);

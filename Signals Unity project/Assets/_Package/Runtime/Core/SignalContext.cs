@@ -124,10 +124,7 @@ namespace Coft.Signals
                 {
                     foreach (var effect in TimingToDirtyEffectsDict[timing])
                     {
-                        if (effect.Dependencies.Any(signal => signal.HasChangedThisPass))
-                        {
-                            effect.Run();
-                        }
+                        effect.Run();
                     }
                     
                     TimingToDirtyEffectsDict[timing].Clear();
