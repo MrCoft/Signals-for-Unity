@@ -51,6 +51,7 @@ namespace Coft.Signals
             
             var needsAnotherPass = true;
             var passNumber = 0;
+            var errors = new List<string>();
 
             while (needsAnotherPass && passNumber < 50)
             {
@@ -68,17 +69,30 @@ namespace Coft.Signals
 
                 // NOTE: update all computeds
                 {
-                    var computedsQueue = TimingToDirtyComputedsDict[timing];
+                    var computedsQueue = new HashSet<IUntypedComputed>();;
 
-                    foreach (var computed in computedsQueue)
+                    foreach (var computed in TimingToDirtyComputedsDict[timing])
                     {
+                        // NOTE: gives us dependency lists
+                        computed.Run();
                         computed.IsReady = false;
                     }
 
-                    var hasAnyRun = computedsQueue.Count > 0;
-                    while (hasAnyRun)
+                    foreach (var computed in TimingToDirtyComputedsDict[timing])
                     {
-                        hasAnyRun = false;
+                        if (computed.Dependencies.All(dep => dep.IsReady))
+                        {
+                            computed.IsReady = true;
+                        }
+                        else
+                        {
+                            computedsQueue.Add(computed);
+                        }
+                    }
+
+                    while (computedsQueue.Count > 0)
+                    {
+                        var hasAnyRun = false;
 
                         var newQueue = new HashSet<IUntypedComputed>();
 
@@ -86,22 +100,31 @@ namespace Coft.Signals
                         {
                             if (computed.Dependencies.All(dep => dep.IsReady))
                             {
+                                // NO NEED
                                 computed.Run();
                                 hasAnyRun = true;
-                                foreach (var subscriber in computed.ComputedSubscribers)
+                                if (computed.Dependencies.Any(dep => dep.IsReady == false))
                                 {
-                                    if (subscriber.HasChangedThisPass)
+                                    computed.IsReady = false;
+                                    newQueue.Add(computed);
+                                }
+                                else
+                                {
+                                    foreach (var subscriber in computed.ComputedSubscribers)
                                     {
-                                        throw new Exception("Infinite loop detected");
+                                        if (subscriber.HasChangedThisPass)
+                                        {
+                                            throw new Exception("Infinite loop detected");
+                                        }
+
+                                        newQueue.Add(subscriber);
                                     }
 
-                                    newQueue.Add(subscriber);
-                                }
-
-                                if (computed.HasChangedThisPass)
-                                    // ALSO CHECK ELSWHERE?
-                                {
-                                    TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
+                                    if (computed.HasChangedThisPass)
+                                        // ALSO CHECK ELSWHERE?
+                                    {
+                                        TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
+                                    }
                                 }
                             }
                             else
@@ -110,12 +133,54 @@ namespace Coft.Signals
                             }
                         }
 
-                        computedsQueue = newQueue;
-                    }
+                        if (hasAnyRun == false)
+                        {
+                            errors.Add("Could not resolve signal graph; possible cycle detected; undefined behavior will follow");
 
-                    if (computedsQueue.Count > 0)
-                    {
-                        throw new Exception("Infinite loop detected");
+                            var computed = computedsQueue.Aggregate((curMin, x) =>
+                            {
+                                if (curMin == null)
+                                {
+                                    return x;
+                                }
+
+                                var curMinDeps = curMin.Dependencies.Count(dep => dep.IsReady == false);
+                                var xDeps = x.Dependencies.Count(dep => dep.IsReady == false);
+
+                                if (curMinDeps < xDeps)
+                                {
+                                    return curMin;
+                                }
+
+                                if (curMinDeps == xDeps)
+                                {
+                                    var curMinResolvedDeps = curMin.Dependencies.Count(dep => dep.IsReady);
+                                    var xResolvedDeps = x.Dependencies.Count(dep => dep.IsReady);
+                                    return curMinResolvedDeps >= xResolvedDeps ? curMin : x;
+                                }
+
+                                return x;
+                            });
+                            
+                            computed.Run();
+                            foreach (var subscriber in computed.ComputedSubscribers)
+                            {
+                                if (subscriber.HasChangedThisPass)
+                                {
+                                    throw new Exception("Infinite loop detected");
+                                }
+
+                                newQueue.Add(subscriber);
+                            }
+
+                            if (computed.HasChangedThisPass)
+                                // ALSO CHECK ELSWHERE?
+                            {
+                                TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
+                            }
+                        }
+
+                        computedsQueue = newQueue;
                     }
                     
                     TimingToDirtyComputedsDict[timing].Clear();
@@ -138,7 +203,12 @@ namespace Coft.Signals
 
             if (needsAnotherPass)
             {
-                throw new Exception("50 passes without update");
+                errors.Add("50 passes without update");
+            }
+
+            if (errors.Count > 0)
+            {
+                throw new Exception(string.Join("\n", errors));
             }
         }
     }

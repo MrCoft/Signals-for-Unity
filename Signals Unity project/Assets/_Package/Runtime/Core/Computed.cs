@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Coft.Signals
 {
-    public class Computed<T> : IUntypedSignal, IUntypedComputed
+    public class Computed<T> : IUntypedComputed, IDisposable
     {
         private SignalContext _context;
 
@@ -26,6 +26,7 @@ namespace Coft.Signals
             _context = context;
             Timing = timing;
             _getter = getter;
+            _cachedValue = default;
             Dependencies = new();
             ComputedSubscribers = new();
             EffectSubscribers = new();
@@ -33,6 +34,20 @@ namespace Coft.Signals
             HasChangedThisPass = false;
             HasRun = false;
             _context.TimingToDirtyComputedsDict[timing].Add(this);
+        }
+
+        public void Dispose()
+        {
+            _context.TimingToDirtyComputedsDict[Timing].Remove(this);
+            foreach (var signal in Dependencies)
+            {
+                signal.ComputedSubscribers.Remove(this);
+            }
+        }
+
+        ~Computed()
+        {
+            Dispose();
         }
 
         public T Value

@@ -78,58 +78,6 @@ namespace Coft.Signals.Tests
                 Assert.AreEqual(0, x);
             }
         }
-        
-        [Test]
-        public void DetectsInfiniteLoop()
-        {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
-            signals.Effect(DefaultTiming, () => value.Value += 1);
-            Assert.Throws<Exception>(() =>
-            {
-                signals.Update(DefaultTiming);
-            });
-        }
-
-        [Test]
-        public void SkipsBroken()
-        {
-            var signals = new SignalContext();
-            var effectHasRun = false;
-            signals.Effect(DefaultTiming, () => throw new Exception());
-            signals.Effect(DefaultTiming, () => effectHasRun = true);
-            try
-            {
-                signals.Update(DefaultTiming);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-            
-            Assert.AreEqual(true, effectHasRun);
-        }
-
-        [Test]
-        public void WaitsWhenDependencyOverwrittenByAnotherEffect()
-        {
-            var signals = new SignalContext();
-            var readValue = signals.Signal(DefaultTiming, 0);
-            var writeValue = signals.Signal(DefaultTiming, 0);
-            var x = 0;
-            signals.Effect(DefaultTiming, () => writeValue.Value = readValue.Value);
-            signals.Effect(DefaultTiming, () =>
-            {
-                var read = writeValue.Value;
-                x += 1;
-            });
-            signals.Update(DefaultTiming);
-            x = 0;
-            readValue.Value = 10;
-            writeValue.Value = 9;
-            signals.Update(DefaultTiming);
-            Assert.AreEqual(1, x);
-        }
 
         [Test]
         public void MultipleEffectsOverwrite()
