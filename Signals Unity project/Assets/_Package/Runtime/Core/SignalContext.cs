@@ -69,16 +69,35 @@ namespace Coft.Signals
 
                 // NOTE: update all computeds
                 {
-                    var computedsQueue = new HashSet<IUntypedComputed>();;
+                    var computedsQueue = new HashSet<IUntypedComputed>();
+                    var newQueue = new HashSet<IUntypedComputed>();
 
                     foreach (var computed in TimingToDirtyComputedsDict[timing])
                     {
                         // NOTE: gives us dependency lists
-                        computed.Run();
-                        computed.IsReady = false;
+                        var runWorked = true;
+                        try
+                        {
+                            computed.Run();
+                        }
+                        catch (Exception e)
+                        {
+                            errors.Add(e.ToString());
+                            runWorked = false;
+                        }
+
+                        if (runWorked)
+                        {
+                            computed.IsReady = false;
+                            newQueue.Add(computed);
+                        }
+                        else
+                        {
+                            computed.Update();
+                        }
                     }
 
-                    foreach (var computed in TimingToDirtyComputedsDict[timing])
+                    foreach (var computed in newQueue)
                     {
                         if (computed.Dependencies.All(dep => dep.IsReady))
                         {
@@ -94,14 +113,31 @@ namespace Coft.Signals
                     {
                         var hasAnyRun = false;
 
-                        var newQueue = new HashSet<IUntypedComputed>();
+                        newQueue = new HashSet<IUntypedComputed>();
 
                         foreach (var computed in computedsQueue)
                         {
                             if (computed.Dependencies.All(dep => dep.IsReady))
                             {
-                                computed.Run();
+                                var runWorked = true;
+                                try
+                                {
+                                    computed.Run();
+                                }
+                                catch (Exception e)
+                                {
+                                    errors.Add(e.ToString());
+                                    runWorked = false;
+                                }
+                                
                                 hasAnyRun = true;
+
+                                if (runWorked == false)
+                                {
+                                    computed.Update();
+                                    continue;
+                                }
+                                
                                 if (computed.Dependencies.Any(dep => dep.IsReady == false))
                                 {
                                     computed.IsReady = false;
@@ -161,10 +197,19 @@ namespace Coft.Signals
                                 return x;
                             });
 
-                            computed.Run();
+                            var runWorked = true;
+                            try
+                            {
+                                computed.Run();
+                            }
+                            catch (Exception e)
+                            {
+                                errors.Add(e.ToString());
+                                runWorked = false;
+                            }
+                            
                             computed.Update();
-
-                            if (computed.HasChangedThisPass)
+                            if (runWorked && computed.HasChangedThisPass)
                             {
                                 foreach (var subscriber in computed.ComputedSubscribers)
                                 {
@@ -186,12 +231,30 @@ namespace Coft.Signals
                 }
 
                 {
+                    var nextQueue = new HashSet<Effect>();
+                    
                     foreach (var effect in TimingToDirtyEffectsDict[timing])
                     {
-                        effect.Run();
+                        if (effect.Dependencies.Any(dep => TimingToDirtySignalsDict[timing].Contains(dep)))
+                        {
+                            nextQueue.Add(effect);
+                            continue;
+                        }
+                        
+                        var runWorked = true;
+                        try
+                        {
+                            effect.Run();
+                        }
+                        catch (Exception e)
+                        {
+                            errors.Add(e.ToString());
+                            runWorked = false;
+                        }
                     }
                     
                     TimingToDirtyEffectsDict[timing].Clear();
+                    TimingToDirtyEffectsDict[timing].UnionWith(nextQueue);
                 }
 
                 if (TimingToDirtySignalsDict[timing].Count > 0)

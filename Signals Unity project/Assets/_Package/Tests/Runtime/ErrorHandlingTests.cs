@@ -87,5 +87,85 @@ namespace Coft.Signals.Tests
             
             Assert.AreEqual(true, effectHasRun);
         }
+
+        [Test]
+        public void RerunsBrokenComputedWithOldDependencies()
+        {
+            var signals = new SignalContext();
+            var value = signals.Signal(DefaultTiming, 1);
+            var x = 0;
+            var computed = signals.Computed(DefaultTiming, () =>
+            {
+                x += 1;
+                if (x >= 2)
+                {
+                    throw new Exception();
+                }
+
+                return value.Value * 2;
+            });
+            signals.Update(DefaultTiming);
+            value.Value += 1;
+            try
+            {
+                signals.Update(DefaultTiming);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            
+            value.Value += 1;
+            try
+            {
+                signals.Update(DefaultTiming);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            
+            Assert.AreEqual(3, x);
+        }
+        
+        [Test]
+        public void RerunsBrokenEffectWithOldDependencies()
+        {
+            var signals = new SignalContext();
+            var value = signals.Signal(DefaultTiming, 1);
+            var x = 0;
+            signals.Effect(DefaultTiming, () =>
+            {
+                x += 1;
+                if (x >= 2)
+                {
+                    throw new Exception();
+                }
+
+                var read = value.Value;
+            });
+            signals.Update(DefaultTiming);
+            value.Value += 1;
+            try
+            {
+                signals.Update(DefaultTiming);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            
+            value.Value += 1;
+            try
+            {
+                signals.Update(DefaultTiming);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            
+            Assert.AreEqual(3, x);
+        }
     }
 }

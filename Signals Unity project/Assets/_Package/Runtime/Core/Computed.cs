@@ -78,18 +78,32 @@ namespace Coft.Signals
             {
                 signal.ComputedSubscribers.Remove(this);
             }
+
+            var dependenciesCopy = new HashSet<IUntypedSignal>(Dependencies);
             Dependencies.Clear();
             // _currentDependencies.Clear();
             _context.DependenciesCollector.Clear();
             // _action();
-            _newValue = _getter();
+            try
+            {
+                _newValue = _getter();
+            }
+            catch (Exception e)
+            {
+                Dependencies.UnionWith(dependenciesCopy);
+                foreach (var signal in dependenciesCopy)
+                {
+                    signal.ComputedSubscribers.Add(this);
+                }
+                throw e;
+            }
             // HasChangedThisPass = _cachedValue.Equals(newValue) == false;
             // _cachedValue = newValue;
+            Dependencies.UnionWith(_context.DependenciesCollector);
             foreach (var signal in _context.DependenciesCollector)
             {
                 // if (_allDependencies.Add(signal)) Register(signal);
                 // _currentDependencies.Add(signal);
-                Dependencies.Add(signal);
                 signal.ComputedSubscribers.Add(this);
             }
         }
