@@ -10,11 +10,11 @@ namespace Coft.Signals.Tests
         public void FirstRunUsesWrongValues()
         {
             var signals = new SignalContext();
-            var a = signals.Computed(DefaultTiming, () => 1);
+            Computed<int> a = null;
             int? firstWrite = null;
             var b = signals.Computed(DefaultTiming, () =>
             {
-                var value = a.Value;
+                var value = a!.Value;
                 if (firstWrite == null)
                 {
                     firstWrite = value;
@@ -22,7 +22,6 @@ namespace Coft.Signals.Tests
 
                 return value + 1;
             });
-            a.Dispose();
             a = signals.Computed(DefaultTiming, () => 1);
             signals.Update(DefaultTiming);
             Assert.AreEqual(2, b.Value);

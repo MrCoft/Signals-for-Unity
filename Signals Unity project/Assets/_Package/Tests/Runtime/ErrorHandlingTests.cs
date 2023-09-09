@@ -12,8 +12,8 @@ namespace Coft.Signals.Tests
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
-            var a = signals.Computed(DefaultTiming, () => value.Value);
-            var b = signals.Computed(DefaultTiming, () => a.Value + 1);
+            Computed<int> a = null;
+            var b = signals.Computed(DefaultTiming, () => a!.Value + 1);
             a = signals.Computed(DefaultTiming, () => b.Value + value.Value);
             Assert.Throws<Exception>(() =>
             {
@@ -26,8 +26,8 @@ namespace Coft.Signals.Tests
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
-            var a = signals.Computed(DefaultTiming, () => value.Value);
-            var b = signals.Computed(DefaultTiming, () => a.Value + 1);
+            Computed<int> a = null;
+            var b = signals.Computed(DefaultTiming, () => a!.Value + 1);
             a = signals.Computed(DefaultTiming, () => b.Value + value.Value);
             try
             {

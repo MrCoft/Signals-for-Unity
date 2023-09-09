@@ -24,11 +24,10 @@ namespace Coft.Signals.Tests
         public void SortsDependencies()
         {
             var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
-            var a = signals.Computed(DefaultTiming, () => value.Value * 2);
-            var b = signals.Computed(DefaultTiming, () => a.Value + 1);
+            var value = signals.Signal(DefaultTiming, 5);
+            Computed<int> a = null;
+            var b = signals.Computed(DefaultTiming, () => a!.Value + 1);
             a = signals.Computed(DefaultTiming, () => value.Value * -2);
-            value.Value = 5;
             signals.Update(DefaultTiming);
             Assert.AreEqual(-9, b.Value);
         }
