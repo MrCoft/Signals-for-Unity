@@ -8,6 +8,7 @@ namespace Coft.Signals
         bool HasChangedThisPass { get; set; }
         
         void Update();
-        HashSet<IUntypedSignal> Subscribers { get; }
+        HashSet<IUntypedComputed> ComputedSubscribers { get; }
+        HashSet<Effect> EffectSubscribers { get; }
     }
 }

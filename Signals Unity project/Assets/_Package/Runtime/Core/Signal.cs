@@ -14,7 +14,8 @@ namespace Coft.Signals
         public bool HasChangedThisPass { get; set; }
         public bool IsReady { get; set; }
         private T _newValue;
-        public HashSet<IUntypedSignal> Subscribers { get; }
+        public HashSet<IUntypedComputed> ComputedSubscribers { get; }
+        public HashSet<Effect> EffectSubscribers { get; }
 
         public Signal(SignalContext context, int timing, T value)
         {
@@ -25,7 +26,8 @@ namespace Coft.Signals
             _newValue = value;
             IsDirty = false;
             IsReady = true;
-            Subscribers = new();
+            ComputedSubscribers = new();
+            EffectSubscribers = new();
         }
 
         public T Value
@@ -48,6 +50,12 @@ namespace Coft.Signals
 
         public void Update()
         {
+            if (IsDirty)
+            {
+                _context.TimingToDirtyComputedsDict[Timing].UnionWith(ComputedSubscribers);
+                _context.TimingToDirtyEffectsDict[Timing].UnionWith(EffectSubscribers);
+            }
+            
             HasChangedThisPass = IsDirty;
             _cachedValue = _newValue;
             IsDirty = false;

@@ -17,7 +17,9 @@ namespace Coft.Signals
 
         public HashSet<IUntypedSignal> Dependencies { get; }
         public bool IsReady { get; set; }
-        public HashSet<IUntypedSignal> Subscribers { get; }
+        public HashSet<IUntypedComputed> ComputedSubscribers { get; }
+        public HashSet<Effect> EffectSubscribers { get; }
+        public bool HasRun { get; set; }
         
         public Computed(SignalContext context, int timing, Func<T> getter)
         {
@@ -25,12 +27,12 @@ namespace Coft.Signals
             Timing = timing;
             _getter = getter;
             Dependencies = new();
-            Subscribers = new();
+            ComputedSubscribers = new();
+            EffectSubscribers = new();
             IsReady = false;
             HasChangedThisPass = false;
-
-            // Run();
-            // HasChangedThisPass = false;
+            HasRun = false;
+            _context.TimingToDirtyComputedsDict[timing].Add(this);
         }
 
         public T Value
@@ -60,7 +62,7 @@ namespace Coft.Signals
                 // if (_allDependencies.Add(signal)) Register(signal);
                 // _currentDependencies.Add(signal);
                 Dependencies.Add(signal);
-                signal.Subscribers.Add(this);
+                signal.ComputedSubscribers.Add(this);
             }
 
             IsReady = true;

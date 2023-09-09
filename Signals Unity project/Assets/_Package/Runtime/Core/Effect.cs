@@ -11,7 +11,6 @@ namespace Coft.Signals
         
         private readonly Action _action;
         public HashSet<IUntypedSignal> Dependencies;
-        public bool HasRun;
 
         public Effect(SignalContext context, int timing, Action action)
         {
@@ -19,18 +18,18 @@ namespace Coft.Signals
             Timing = timing;
             _action = action;
             Dependencies = new HashSet<IUntypedSignal>();
-            HasRun = false;
+            _context.TimingToDirtyEffectsDict[timing].Add(this);
         }
 
         public void Run()
         {
             Dependencies.Clear();
             _context.DependenciesCollector.Clear();
-            HasRun = true;
             _action();
             foreach (var signal in _context.DependenciesCollector)
             {
                 Dependencies.Add(signal);
+                signal.EffectSubscribers.Add(this);
             }
         }
     }
