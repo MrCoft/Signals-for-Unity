@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Coft.Signals
 {
-    public class Computed<T> : IUntypedSignal, IUntypedComputed, IReadOnlySignal<T>
+    public class Computed<T> : IUntypedSignal, IUntypedComputed
     {
         private SignalContext _context;
 

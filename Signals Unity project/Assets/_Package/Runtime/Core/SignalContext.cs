@@ -24,7 +24,7 @@ namespace Coft.Signals
             }
         }
         
-        public ISignal<T> Signal<T>(int timing, T value) where T : IEquatable<T>
+        public Signal<T> Signal<T>(int timing, T value) where T : IEquatable<T>
         {
             InitializeTiming(timing);
             
@@ -33,7 +33,7 @@ namespace Coft.Signals
             return signal;
         }
 
-        public IReadOnlySignal<T> Computed<T>(int timing, Func<T> getter)
+        public Computed<T> Computed<T>(int timing, Func<T> getter)
         {
             InitializeTiming(timing);
             

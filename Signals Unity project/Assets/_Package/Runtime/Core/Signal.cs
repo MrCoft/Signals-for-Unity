@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Signal<T> : ISignal<T>, IUntypedSignal where T : IEquatable<T>
+    public class Signal<T> : IUntypedSignal where T : IEquatable<T>
     {
         private SignalContext _context;
 
