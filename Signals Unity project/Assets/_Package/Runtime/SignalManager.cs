@@ -10,9 +10,10 @@ namespace Coft.Signals
         public bool IsDirty;
         
         private Dictionary<int, LinkedList<IUntypedSignal>> _timingToValuesDict = new();
+        private Dictionary<int, LinkedList<IUntypedComputed>> _timingToComputedsDict = new();
         private Dictionary<int, LinkedList<Effect>> _timingToEffectsDict = new();
 
-        public ISignal<T> CreateSignal<T>(int timing, T value)
+        public ISignal<T> Signal<T>(int timing, T value) where T : IEquatable<T>
         {
             var reactiveValue = new Signal<T>(this, timing, value);
 
@@ -26,11 +27,20 @@ namespace Coft.Signals
             return reactiveValue;
         }
 
-        public IReadOnlySignal<T> Computed<T>(Func<T> getter)
+        public IReadOnlySignal<T> Computed<T>(int timing, Func<T> getter)
         {
-            return null;
+            var computed = new ComputedSignal<T>(this, timing, getter);
+            
+            if (_timingToComputedsDict.ContainsKey(timing) == false)
+            {
+                _timingToComputedsDict.Add(timing, new());
+            }
+            
+            _timingToComputedsDict[timing].AddLast(computed);
+            
+            return computed;
         }
-
+        
         public void Effect(int timing, Action action)
         {
             var effect = new Effect(this, timing, action);
@@ -55,17 +65,67 @@ namespace Coft.Signals
                 reactiveValue.Update();
             }
             
-            // TODO LATER
-            // after all computeds are computed
+            // NOTE: update all computeds
+            if (_timingToComputedsDict.ContainsKey(timing))
+            {
+                var computedsQueue = _timingToComputedsDict[timing]
+                    .Where(signal => signal.Dependencies.Any(dep => dep.HasChangedThisPass))
+                    .ToHashSet();
+                
+                foreach (var computed in computedsQueue)
+                {
+                    computed.IsReady = false;
+                }
+                
+                var hasAnyRun = computedsQueue.Count > 0;
+                while (hasAnyRun)
+                {
+                    hasAnyRun = false;
+
+                    var newQueue = new HashSet<IUntypedComputed>();
+                    
+                    foreach (var computed in computedsQueue)
+                    {
+                        if (computed.Dependencies.All(dep => dep.IsReady))
+                        {
+                            computed.Run();
+                            hasAnyRun = true;
+                            foreach (var subscriber in computed.Subscribers.OfType<IUntypedComputed>())
+                            {
+                                if (subscriber.HasChangedThisPass)
+                                {
+                                    throw new Exception("Infinite loop detected");
+                                }
+                                
+                                newQueue.Add(subscriber);
+                            }
+                        }
+                        else
+                        {
+                            newQueue.Add(computed);
+                        }
+                    }
+
+                    computedsQueue = newQueue;
+                }
+
+                if (computedsQueue.Count > 0)
+                {
+                    throw new Exception("Infinite loop detected");
+                }
+            }
 
             IsDirty = false;
-            
-            foreach (var effect in _timingToEffectsDict[timing])
+
+            if (_timingToEffectsDict.ContainsKey(timing))
             {
-                if (effect._currentDependencies.OfType<Signal<int>>().Any(signal => signal.HasChangedThisPass))
+                foreach (var effect in _timingToEffectsDict[timing])
                 {
-                    effect.Run();
-                    // this should update dependencies
+                    if (effect._currentDependencies.Any(signal => signal.HasChangedThisPass))
+                    {
+                        effect.Run();
+                        // this should update dependencies
+                    }
                 }
             }
 

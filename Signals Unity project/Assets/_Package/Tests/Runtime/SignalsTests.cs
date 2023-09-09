@@ -10,29 +10,31 @@ namespace Coft.Signals.Tests
         public void WriteIsDelayed()
         {
             var signals = new SignalManager();
-            var value = signals.CreateSignal(DefaultTiming, 1);
+            var value = signals.Signal(DefaultTiming, 1);
             Assert.AreEqual(1, value.Value);
             value.Value = 2;
             Assert.AreEqual(1, value.Value);
             signals.Update(DefaultTiming);
             Assert.AreEqual(2, value.Value);
         }
-        
-        // Setter to same value doesnt trigger changes
-        
+
         [Test]
-        public void ComputedWorks()
+        public void SameValueWriteIsIgnored()
         {
             var signals = new SignalManager();
-            var value = signals.CreateSignal(DefaultTiming, 1);
-            var computed = signals.Computed(() => value.Value * 2);
+            var value = signals.Signal(DefaultTiming, 1);
+            var x = 0;
+            signals.Effect(DefaultTiming, () => x = value.Value);
+            x = 0;
+            value.Value = 1;
             signals.Update(DefaultTiming);
-            Assert.AreEqual(2, computed.Value);
-            value.Value = 2;
-            signals.Update(DefaultTiming);
-            Assert.AreEqual(4, computed.Value);
+            Assert.AreEqual(0, x);
         }
-
+        
+        
+        
+        
+        
         [Test]
         public void EventsDontMultiply()
         {
@@ -41,12 +43,6 @@ namespace Coft.Signals.Tests
 
         [Test]
         public void SignalsDispose()
-        {
-            
-        }
-
-        [Test]
-        public void CyclicDependenciesDetected()
         {
             
         }

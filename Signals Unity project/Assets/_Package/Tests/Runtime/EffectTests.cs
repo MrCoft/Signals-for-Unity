@@ -19,7 +19,7 @@ namespace Coft.Signals.Tests
         public void EffectRunsOnChange()
         {
             var signals = new SignalManager();
-            var value = signals.CreateSignal(DefaultTiming, 1);
+            var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = value.Value);
             value.Value = 2;
@@ -31,7 +31,7 @@ namespace Coft.Signals.Tests
         public void EffectDoesntRunOnUnrelatedChange()
         {
             var signals = new SignalManager();
-            var value = signals.CreateSignal(DefaultTiming, 1);
+            var value = signals.Signal(DefaultTiming, 1);
             var effectHasRun = false;
             signals.Effect(DefaultTiming, () => effectHasRun = true);
             effectHasRun = false;
@@ -44,9 +44,9 @@ namespace Coft.Signals.Tests
         public void EffectChangesDependencies()
         {
             var signals = new SignalManager();
-            var condition = signals.CreateSignal(DefaultTiming, true);
-            var value1 = signals.CreateSignal(DefaultTiming, 1);
-            var value2 = signals.CreateSignal(DefaultTiming, 2);
+            var condition = signals.Signal(DefaultTiming, true);
+            var value1 = signals.Signal(DefaultTiming, 1);
+            var value2 = signals.Signal(DefaultTiming, 2);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = condition.Value ? value1.Value : value2.Value);
             Assert.AreEqual(1, x);
@@ -63,6 +63,12 @@ namespace Coft.Signals.Tests
                 signals.Update(DefaultTiming);
                 Assert.AreEqual(0, x);
             }
+        }
+        
+        [Test]
+        public void EffectDetectsInfiniteLoop()
+        {
+            
         }
     }
 }
