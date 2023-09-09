@@ -109,5 +109,48 @@ namespace Coft.Signals.Tests
             
             Assert.AreEqual(true, effectHasRun);
         }
+
+        [Test]
+        public void WaitsWhenDependencyOverwrittenByAnotherEffect()
+        {
+            var signals = new SignalContext();
+            var readValue = signals.Signal(DefaultTiming, 0);
+            var writeValue = signals.Signal(DefaultTiming, 0);
+            var x = 0;
+            signals.Effect(DefaultTiming, () => writeValue.Value = readValue.Value);
+            signals.Effect(DefaultTiming, () =>
+            {
+                var read = writeValue.Value;
+                x += 1;
+            });
+            signals.Update(DefaultTiming);
+            x = 0;
+            readValue.Value = 10;
+            writeValue.Value = 9;
+            signals.Update(DefaultTiming);
+            Assert.AreEqual(1, x);
+        }
+
+        [Test]
+        public void MultipleEffectsOverwrite()
+        {
+            var signals = new SignalContext();
+            var triggerValue = signals.Signal(DefaultTiming, 0);
+            var writeValue1 = signals.Signal(DefaultTiming, 0);
+            var writeValue2 = signals.Signal(DefaultTiming, 0);
+            signals.Effect(DefaultTiming, () =>
+            {
+                writeValue1.Value = 10 + triggerValue.Value;
+                writeValue2.Value = 11 + triggerValue.Value;
+            });
+            signals.Effect(DefaultTiming, () =>
+            {
+                writeValue1.Value = 20 + triggerValue.Value;
+            });
+            signals.Update(DefaultTiming);
+            triggerValue.Value = 1;
+            signals.Update(DefaultTiming);
+            Assert.AreEqual(21, writeValue1.Value);
+        }
     }
 }

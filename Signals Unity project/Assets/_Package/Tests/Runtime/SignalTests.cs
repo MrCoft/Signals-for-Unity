@@ -51,7 +51,20 @@ namespace Coft.Signals.Tests
         [Test]
         public void SignalsDispose()
         {
-            // ~Object.Finalize() is called when object is garbage collected
+            var signals = new SignalContext();
+            var value = signals.Signal(DefaultTiming, 1);
+            var effectHasRun = false;
+            var effect = signals.Effect(DefaultTiming, () =>
+            {
+                var read = value.Value;
+                effectHasRun = true;
+            });
+            signals.Update(DefaultTiming);
+            effect.Dispose();
+            value.Value = 2;
+            effectHasRun = false;
+            signals.Update(DefaultTiming);
+            Assert.AreEqual(false, effectHasRun);
         }
     }
 }

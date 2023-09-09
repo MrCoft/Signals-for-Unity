@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Effect
+    public class Effect : IDisposable
     {
         private SignalContext _context;
 
@@ -19,6 +19,16 @@ namespace Coft.Signals
             _action = action;
             Dependencies = new HashSet<IUntypedSignal>();
             _context.TimingToDirtyEffectsDict[timing].Add(this);
+        }
+        
+        public void Dispose()
+        {
+            _context.TimingToDirtyEffectsDict[Timing].Remove(this);
+        }
+
+        ~Effect()
+        {
+            Dispose();
         }
 
         public void Run()

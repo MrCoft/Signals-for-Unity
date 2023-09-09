@@ -37,11 +37,12 @@ namespace Coft.Signals
             return computed;
         }
         
-        public void Effect(int timing, Action action)
+        public Effect Effect(int timing, Action action)
         {
             InitializeTiming(timing);
             
             var effect = new Effect(this, timing, action);
+            return effect;
         }
 
         public void Update(int timing)
