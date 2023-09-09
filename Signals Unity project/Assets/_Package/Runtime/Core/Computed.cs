@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Coft.Signals
 {
-    public class Computed<T> : IUntypedComputed, IDisposable
+    public class Computed<T> : IUntypedComputed, IDisposable where T : IEquatable<T>
     {
         private SignalContext _context;
 
@@ -12,6 +12,7 @@ namespace Coft.Signals
 
         private readonly Func<T> _getter;
         private T _cachedValue;
+        private T _newValue;
         
         public bool HasChangedThisPass { get; set; }
 
@@ -27,6 +28,7 @@ namespace Coft.Signals
             Timing = timing;
             _getter = getter;
             _cachedValue = default;
+            _newValue = default;
             Dependencies = new();
             ComputedSubscribers = new();
             EffectSubscribers = new();
@@ -61,17 +63,28 @@ namespace Coft.Signals
 
         public void Update()
         {
+            HasChangedThisPass = _newValue.Equals(_cachedValue) == false;
+            if (_newValue.Equals(_cachedValue) == false)
+            {
+                _cachedValue = _newValue;
+            }
+
+            IsReady = true;
         }
 
         public void Run()
         {
+            foreach (var signal in Dependencies)
+            {
+                signal.ComputedSubscribers.Remove(this);
+            }
             Dependencies.Clear();
             // _currentDependencies.Clear();
             _context.DependenciesCollector.Clear();
             // _action();
-            var newValue = _getter();
-            HasChangedThisPass = _cachedValue.Equals(newValue) == false;
-            _cachedValue = newValue;
+            _newValue = _getter();
+            // HasChangedThisPass = _cachedValue.Equals(newValue) == false;
+            // _cachedValue = newValue;
             foreach (var signal in _context.DependenciesCollector)
             {
                 // if (_allDependencies.Add(signal)) Register(signal);
@@ -79,8 +92,6 @@ namespace Coft.Signals
                 Dependencies.Add(signal);
                 signal.ComputedSubscribers.Add(this);
             }
-
-            IsReady = true;
         }
     }
 }

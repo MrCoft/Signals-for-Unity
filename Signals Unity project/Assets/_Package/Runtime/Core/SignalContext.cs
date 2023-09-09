@@ -29,7 +29,7 @@ namespace Coft.Signals
             return signal;
         }
 
-        public Computed<T> Computed<T>(int timing, Func<T> getter)
+        public Computed<T> Computed<T>(int timing, Func<T> getter) where T : IEquatable<T>
         {
             InitializeTiming(timing);
             
@@ -82,7 +82,7 @@ namespace Coft.Signals
                     {
                         if (computed.Dependencies.All(dep => dep.IsReady))
                         {
-                            computed.IsReady = true;
+                            computed.Update();
                         }
                         else
                         {
@@ -100,7 +100,6 @@ namespace Coft.Signals
                         {
                             if (computed.Dependencies.All(dep => dep.IsReady))
                             {
-                                // NO NEED
                                 computed.Run();
                                 hasAnyRun = true;
                                 if (computed.Dependencies.Any(dep => dep.IsReady == false))
@@ -110,19 +109,19 @@ namespace Coft.Signals
                                 }
                                 else
                                 {
-                                    foreach (var subscriber in computed.ComputedSubscribers)
-                                    {
-                                        if (subscriber.HasChangedThisPass)
-                                        {
-                                            throw new Exception("Infinite loop detected");
-                                        }
-
-                                        newQueue.Add(subscriber);
-                                    }
+                                    computed.Update();
 
                                     if (computed.HasChangedThisPass)
-                                        // ALSO CHECK ELSWHERE?
                                     {
+                                        foreach (var subscriber in computed.ComputedSubscribers)
+                                        {
+                                            if (subscriber.HasChangedThisPass == false)
+                                            {
+                                                // throw new Exception("Infinite loop detected");
+                                                newQueue.Add(subscriber);
+                                            }
+                                        }
+                                        
                                         TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
                                     }
                                 }
@@ -161,21 +160,21 @@ namespace Coft.Signals
 
                                 return x;
                             });
-                            
-                            computed.Run();
-                            foreach (var subscriber in computed.ComputedSubscribers)
-                            {
-                                if (subscriber.HasChangedThisPass)
-                                {
-                                    throw new Exception("Infinite loop detected");
-                                }
 
-                                newQueue.Add(subscriber);
-                            }
+                            computed.Run();
+                            computed.Update();
 
                             if (computed.HasChangedThisPass)
-                                // ALSO CHECK ELSWHERE?
                             {
+                                foreach (var subscriber in computed.ComputedSubscribers)
+                                {
+                                    if (subscriber.HasChangedThisPass == false)
+                                    {
+                                        // throw new Exception("Infinite loop detected");
+                                        newQueue.Add(subscriber);
+                                    }
+                                }
+                                    
                                 TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
                             }
                         }

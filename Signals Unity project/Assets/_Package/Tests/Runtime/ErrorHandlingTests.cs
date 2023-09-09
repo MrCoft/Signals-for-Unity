@@ -15,10 +15,11 @@ namespace Coft.Signals.Tests
             Computed<int> a = null;
             var b = signals.Computed(DefaultTiming, () => a!.Value + 1);
             a = signals.Computed(DefaultTiming, () => b.Value + value.Value);
-            Assert.Throws<Exception>(() =>
+            var exception = Assert.Throws<Exception>(() =>
             {
                 signals.Update(DefaultTiming);
             });
+            Assert.That(exception.Message, Does.Contain("Could not resolve signal graph; possible cycle detected; undefined behavior will follow"));
         }
         
         [Test]
@@ -45,10 +46,11 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             signals.Effect(DefaultTiming, () => value.Value += 1);
-            Assert.Throws<Exception>(() =>
+            var exception = Assert.Throws<Exception>(() =>
             {
                 signals.Update(DefaultTiming);
             });
+            Assert.That(exception.Message, Does.Contain("50 passes without update"));
         }
         
         [Test]
