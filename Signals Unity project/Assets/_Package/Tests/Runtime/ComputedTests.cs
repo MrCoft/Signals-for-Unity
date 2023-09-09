@@ -8,7 +8,7 @@ namespace Coft.Signals.Tests
         private const int DefaultTiming = 0;
         
         [Test]
-        public void ComputedWorks()
+        public void Works()
         {
             var signals = new SignalManager();
             var value = signals.Signal(DefaultTiming, 1);
@@ -21,7 +21,7 @@ namespace Coft.Signals.Tests
         }
         
         [Test]
-        public void ComputedSortsDependencies()
+        public void SortsDependencies()
         {
             var signals = new SignalManager();
             var value = signals.Signal(DefaultTiming, 1);
@@ -34,7 +34,7 @@ namespace Coft.Signals.Tests
         }
         
         [Test]
-        public void ComputedDetectsCyclicDependencies()
+        public void DetectsCyclicDependencies()
         {
             var signals = new SignalManager();
             var value = signals.Signal(DefaultTiming, 1);
@@ -49,7 +49,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void ComputedSameValueIsIgnored()
+        public void SameValueIsIgnored()
         {
             var signals = new SignalManager();
             var value = signals.Signal(DefaultTiming, 1);
@@ -62,6 +62,22 @@ namespace Coft.Signals.Tests
             value.Value = -3;
             signals.Update(DefaultTiming);
             Assert.AreEqual(0, x);
+        }
+
+        [Test]
+        public void SkipsBroken()
+        {
+            var signals = new SignalManager();
+            var computedBroken = signals.Computed<int>(DefaultTiming, () => throw new Exception());
+            var computed = signals.Computed(DefaultTiming, () => 1);
+            try
+            {
+                signals.Update(DefaultTiming);
+            } catch (Exception e)
+            {
+                // ignored
+            }
+            Assert.AreEqual(1, computed.Value);
         }
     }
 }

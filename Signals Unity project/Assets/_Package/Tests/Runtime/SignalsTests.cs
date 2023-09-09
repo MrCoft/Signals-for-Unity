@@ -31,20 +31,27 @@ namespace Coft.Signals.Tests
             Assert.AreEqual(0, x);
         }
         
-        
-        
-        
-        
         [Test]
         public void EventsDontMultiply()
         {
-            
+            var signals = new SignalManager();
+            var value = signals.Signal(DefaultTiming, 1);
+            var computed = signals.Computed(DefaultTiming, () => value.Value * 2);
+            var x = 0;
+            signals.Effect(DefaultTiming, () =>
+            {
+                var read = value.Value;
+                read = computed.Value;
+                x += 1;
+            });
+            signals.Update(DefaultTiming);
+            Assert.AreEqual(1, x);
         }
-
+        
         [Test]
         public void SignalsDispose()
         {
-            
+            // ~Object.Finalize() is called when object is garbage collected
         }
     }
 }

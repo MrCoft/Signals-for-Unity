@@ -29,8 +29,8 @@ namespace Coft.Signals
             IsReady = false;
             HasChangedThisPass = false;
 
-            Run();
-            HasChangedThisPass = false;
+            // Run();
+            // HasChangedThisPass = false;
         }
 
         public T Value

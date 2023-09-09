@@ -21,7 +21,7 @@ namespace Coft.Signals
             _allDependencies = new HashSet<IUntypedSignal>();
             _currentDependencies = new HashSet<IUntypedSignal>();
             
-            Run();
+            // Run();
         }
 
         public void Run()

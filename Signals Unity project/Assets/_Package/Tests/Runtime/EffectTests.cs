@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace Coft.Signals.Tests
@@ -7,33 +8,45 @@ namespace Coft.Signals.Tests
         private const int DefaultTiming = 0;
 
         [Test]
-        public void EffectRunsImmediately()
+        public void DoesntRunImmediately()
         {
             var signals = new SignalManager();
             var x = 0;
             signals.Effect(DefaultTiming, () => x = 1);
+            Assert.AreEqual(0, x);
+        }
+        
+        [Test]
+        public void RunsOnUpdate()
+        {
+            var signals = new SignalManager();
+            var x = 0;
+            signals.Effect(DefaultTiming, () => x = 1);
+            signals.Update(DefaultTiming);
             Assert.AreEqual(1, x);
         }
 
         [Test]
-        public void EffectRunsOnChange()
+        public void RunsOnChange()
         {
             var signals = new SignalManager();
             var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = value.Value);
+            signals.Update(DefaultTiming);
             value.Value = 2;
             signals.Update(DefaultTiming);
             Assert.AreEqual(2, x);
         }
 
         [Test]
-        public void EffectDoesntRunOnUnrelatedChange()
+        public void DoesntRunOnUnrelatedChange()
         {
             var signals = new SignalManager();
             var value = signals.Signal(DefaultTiming, 1);
             var effectHasRun = false;
             signals.Effect(DefaultTiming, () => effectHasRun = true);
+            signals.Update(DefaultTiming);
             effectHasRun = false;
             value.Value = 2;
             signals.Update(DefaultTiming);
@@ -41,7 +54,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectChangesDependencies()
+        public void ChangesDependencies()
         {
             var signals = new SignalManager();
             var condition = signals.Signal(DefaultTiming, true);
@@ -49,6 +62,7 @@ namespace Coft.Signals.Tests
             var value2 = signals.Signal(DefaultTiming, 2);
             var x = 0;
             signals.Effect(DefaultTiming, () => x = condition.Value ? value1.Value : value2.Value);
+            signals.Update(DefaultTiming);
             Assert.AreEqual(1, x);
 
             {
@@ -66,9 +80,34 @@ namespace Coft.Signals.Tests
         }
         
         [Test]
-        public void EffectDetectsInfiniteLoop()
+        public void DetectsInfiniteLoop()
         {
+            var signals = new SignalManager();
+            var value = signals.Signal(DefaultTiming, 1);
+            signals.Effect(DefaultTiming, () => value.Value += 1);
+            Assert.Throws<Exception>(() =>
+            {
+                signals.Update(DefaultTiming);
+            });
+        }
+
+        [Test]
+        public void SkipsBroken()
+        {
+            var signals = new SignalManager();
+            var effectHasRun = false;
+            signals.Effect(DefaultTiming, () => throw new Exception());
+            signals.Effect(DefaultTiming, () => effectHasRun = true);
+            try
+            {
+                signals.Update(DefaultTiming);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
             
+            Assert.AreEqual(true, effectHasRun);
         }
     }
 }
