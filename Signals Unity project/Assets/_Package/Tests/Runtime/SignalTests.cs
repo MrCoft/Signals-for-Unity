@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Coft.Signals.Tests
 {
-    public class SignalsTests
+    public class SignalTests
     {
         private const int DefaultTiming = 0;
         

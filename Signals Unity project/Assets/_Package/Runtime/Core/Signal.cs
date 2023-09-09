@@ -41,6 +41,7 @@ namespace Coft.Signals
                 {
                     _newValue = value;
                     IsDirty = true;
+                    _context.TimingToDirtySignalsDict[Timing].Add(this);
                 }
             }
         }

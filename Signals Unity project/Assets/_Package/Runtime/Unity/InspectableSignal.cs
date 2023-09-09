@@ -17,10 +17,5 @@ namespace Coft.Signals
         //     : base(initialValue)
         // {
         // }
-        //
-        // public FloatSignal(ReactiveProperty<float> property)
-        //     : base(property)
-        // {
-        // }
     }
 }
