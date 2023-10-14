@@ -1,6 +1,6 @@
 {
   "name": "com.coft.signals",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "displayName": "Signals",
   "description": "Reactivity for .NET. Provides observable values and auto-registered side-effects.",
   "author": {

@@ -14,16 +14,17 @@
         <PackageTags>reactive, observable</PackageTags>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <RootNamespace>NugetProject</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="..\Signals Unity project\Assets\Signals\Runtime\Core\**\*.cs">
+        <Compile Include="..\..\Signals Unity project\Assets\Signals\Runtime\Core\**\*.cs">
             <Link>Core\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </Compile>
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\Signals Unity project\Assets\Signals\Runtime\Interfaces\**\*.cs">
+        <Compile Include="..\..\Signals Unity project\Assets\Signals\Runtime\Interfaces\**\*.cs">
             <Link>Interfaces\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </Compile>
     </ItemGroup>
@@ -33,7 +34,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
     <PropertyGroup>
