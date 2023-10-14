@@ -12,6 +12,8 @@
         <RepositoryUrl>https://github.com/MrCoft/Signals-for-Unity</RepositoryUrl>
         <Authors>Ondřej Műller</Authors>
         <PackageTags>reactive, observable</PackageTags>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>
