@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>9</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>0.0.1</Version>
+        <Title>Signals</Title>
+        <Description>List of assets matching a query with automatic updates</Description>
+        <PackageProjectUrl>https://github.com/MrCoft/Signals-for-Unity</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/MrCoft/Signals-for-Unity/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/MrCoft/Signals-for-Unity</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="..\Signals Unity project\Assets\Signals\Runtime\**\*.cs">
+          <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      </Compile>
+    </ItemGroup>
+
+</Project>
