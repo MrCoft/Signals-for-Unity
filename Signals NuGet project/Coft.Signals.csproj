@@ -31,9 +31,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\README.md">
-        <Link>README.md</Link>
-      </Content>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
     <PropertyGroup>
