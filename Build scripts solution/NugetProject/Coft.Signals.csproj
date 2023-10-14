@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>9</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>0.0.2</Version>
+        <Version>0.0.4</Version>
         <Title>Signals</Title>
         <Description>Reactivity for .NET. Provides observable values and auto-registered side-effects.</Description>
         <PackageProjectUrl>https://github.com/MrCoft/Signals-for-Unity</PackageProjectUrl>
