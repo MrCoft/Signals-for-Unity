@@ -1,22 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>9</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>0.0.1</Version>
         <Title>Signals</Title>
-        <Description>List of assets matching a query with automatic updates</Description>
+        <Description>Reactivity for .NET. Provides observable values and auto-registered side-effects.</Description>
         <PackageProjectUrl>https://github.com/MrCoft/Signals-for-Unity</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/MrCoft/Signals-for-Unity/blob/main/LICENSE</PackageLicenseUrl>
+        <PackageLicenseUrl></PackageLicenseUrl>
         <RepositoryUrl>https://github.com/MrCoft/Signals-for-Unity</RepositoryUrl>
+        <Authors>Ondřej Műller</Authors>
+        <PackageTags>reactive, observable</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="..\Signals Unity project\Assets\Signals\Runtime\**\*.cs">
-          <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
-      </Compile>
+        <Compile Include="..\Signals Unity project\Assets\Signals\Runtime\Core\**\*.cs">
+            <Link>Core\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Signals Unity project\Assets\Signals\Runtime\Interfaces\**\*.cs">
+            <Link>Interfaces\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        </Compile>
     </ItemGroup>
 
 </Project>

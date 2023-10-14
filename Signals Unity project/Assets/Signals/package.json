@@ -2,7 +2,7 @@
   "name": "com.coft.signals",
   "version": "0.0.1",
   "displayName": "Signals",
-  "description": "List of assets matching a query with automatic updates",
+  "description": "Reactivity for .NET. Provides observable values and auto-registered side-effects.",
   "author": {
     "name": "Ondřej Műller",
     "email": "devcoft@gmail.com",
