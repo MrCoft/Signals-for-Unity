@@ -1,8 +1,8 @@
 <br/>
 
-<h1 align='center'>vite-plugin-root-redirect</h1>
+<h1 align='center'>Signals for Unity</h1>
 
-<p align='center'><b>Redirect Vite's development server root to custom URL</b></p>
+<p align='center'><b>Redirect Vite's development server root to a custom URL</b></p>
 
 <p align='center'>Useful for projects with nested or multiple entry points.</p>
 
@@ -16,7 +16,7 @@ npm install -D @netglade/vite-plugin-root-redirect
 
 ## Example
 
-How to launch Vite in development aimed at `src/views/Dashboard/index.html`:
+How to launch Vite in development mode aimed at `src/views/Dashboard/index.html`:
 
 Example folder structure:
 

@@ -1,0 +1,52 @@
+name: Run Unity tests
+
+on: [push]
+
+jobs:
+#  activation:
+#    name: Request manual activation file 🔑
+#    runs-on: ubuntu-latest
+#    steps:
+#      # Request manual activation file
+#      - name: Request manual activation file
+#        id: getManualLicenseFile
+#        uses: game-ci/unity-request-activation-file@v2
+#      # Upload artifact (Unity_v20XX.X.XXXX.alf)
+#      - name: Expose as artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: ${{ steps.getManualLicenseFile.outputs.filePath }}
+#          path: ${{ steps.getManualLicenseFile.outputs.filePath }}
+  test:
+    name: Run Unity tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - test-project
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v2
+        with:
+          path: path/to/your/project/Library
+          key: Library-${{ matrix.projectPath }}
+          restore-keys: |
+            Library-
+#      - uses: game-ci/unity-test-runner@v3
+#        env:
+#          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#        with:
+#          projectPath: path/to/your/project
+#          githubToken: ${{ secrets.GITHUB_TOKEN }}
+#          packageMode: true
+
+#- uses: game-ci/unity-test-runner@v3
+#  env:
+#    UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+#  with:
+#    projectPath: path/to/your/project
+#    githubToken: ${{ secrets.GITHUB_TOKEN }}
+#    packageMode: true
