@@ -2,97 +2,125 @@
 
 <h1 align='center'>Signals for Unity</h1>
 
-<p align='center'><b>Redirect Vite's development server root to a custom URL</b></p>
+<p align='center'><b>Reactivity for .NET — observable values and auto-tracked side-effects</b></p>
 
-<p align='center'>Useful for projects with nested or multiple entry points.</p>
+<p align='center'>
+  <a href="https://www.nuget.org/packages/Coft.Signals">NuGet</a> ·
+  <a href="https://github.com/MrCoft/Signals-for-Unity">GitHub</a>
+</p>
 
 <br/>
 
+## Overview
+
+Signals for Unity brings a signals-based reactivity model to C# and Unity. Inspired by reactive primitives found in SolidJS and Preact Signals, it lets you declare observable values (`Signal`), derived values (`Computed`), and side-effects (`Effect`) that automatically track their own dependencies — no manual subscriptions required.
+
+Updates are batched and resolved in topological order per a **timing** integer, making it straightforward to wire signals into Unity's different update loops (e.g. `Update`, `FixedUpdate`, `LateUpdate`).
+
+## Core concepts
+
+| Type | Description |
+|------|-------------|
+| `Signal<T>` | A writable observable value. Reading `.Value` inside a `Computed` or `Effect` registers a dependency automatically. |
+| `Computed<T>` | A read-only derived value. Re-evaluated lazily when any dependency changes. |
+| `Effect` | A side-effect action that re-runs whenever its signal dependencies change. |
+| `SignalContext` | Owns a set of signals and drives updates. Call `Update(timing)` each frame to flush dirty signals. |
+
 ## Installation
 
+### Unity Package Manager
+
+Add via git URL in the Package Manager:
+```
+https://github.com/MrCoft/Signals-for-Unity.git?path=Signals Unity project/Assets/Signals
+```
+
+### NuGet
+
 ```shell
-npm install -D @netglade/vite-plugin-root-redirect
+dotnet add package Coft.Signals
 ```
 
-## Example
+## Usage
 
-How to launch Vite in development mode aimed at `src/views/Dashboard/index.html`:
+### Creating a context
 
-Example folder structure:
-
-```
-├── src
-│   ├── views
-│   │   ├── Dashboard
-│   │   │   ├── index.html
-│   │   │   ├── index.ts
-│   │   │   // other framework-specific files
+```csharp
+var ctx = new SignalContext();
+const int updateTiming = 0; // group signals by Unity loop
 ```
 
-Add plugin to your `vite.config.ts`:
+### Signal — writable value
 
-```typescript
-import { defineConfig } from 'vite'
-import path from 'path'
-// Import plugin
-import { rootRedirect } from '@netglade/vite-plugin-root-redirect'
+```csharp
+var health = ctx.Signal(updateTiming, 100);
 
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      input: {
-        dashboard: path.resolve(__dirname, 'src/views/Dashboard/index.html'),
-      }
-    }
-  },
-  
-  plugins: [
-    // Use plugin
-    rootRedirect({
-      url: 'http://localhost:5173/src/views/Dashboard/index.html'
-    }),
-  ],
-})
+health.Value = 80; // marks signal dirty
 ```
-## rootRedirect API
 
-**rootRedirect(options)**
+### Computed — derived value
 
-Plugin options:
+```csharp
+var isDead = ctx.Computed(updateTiming, () => health.Value <= 0);
+// isDead.Value is recalculated automatically when health changes
+```
 
-```typescript
+### Effect — side-effect
+
+```csharp
+var effect = ctx.Effect(updateTiming, () =>
 {
-  // `url` - the URL that Vite's root will redirect to
-  url: string
+    Debug.Log($"Health changed: {health.Value}");
+});
+// Runs once immediately, then re-runs whenever health.Value changes
+```
+
+### Flushing updates
+
+Call `Update` once per frame (or per fixed update, etc.) to propagate changes:
+
+```csharp
+void Update()
+{
+    ctx.Update(updateTiming);
 }
 ```
 
-## Motivation
+`Update` resolves signals → computeds → effects in topological order. Effects whose dependencies haven't settled yet are deferred to the next pass automatically.
 
-This plugin is useful for projects with nested or multiple index.html entry points. It only helps during development while using the `vite` command.
+### Disposing
 
-[Vite supports multiple entry-points.](https://vitejs.dev/guide/build.html#multi-page-app) The starting URL can be somewhat modified, but it is defined in multiple places:
+`Computed` and `Effect` implement `IDisposable`. Dispose them when the owning object is destroyed to unsubscribe from all dependencies:
 
-- You can [open the app automatically in the browser on launch.](https://vitejs.dev/config/server-options.html#server-open) This URL can be modified.
-
-- When Vite starts, it prints a message into the terminal with the starting URL. This URL cannot be changed.
-
-```shell
-VITE v4.4.9  ready in 767 ms
-
-➜  Local:   http://localhost:5173/
+```csharp
+void OnDestroy()
+{
+    isDead.Dispose();
+    effect.Dispose();
+}
 ```
 
-- You could have a back-end setup to proxy to the Vite server during development, where the starting URL might also have to be specified.
-- The [Vite extension for VS Code](https://marketplace.visualstudio.com/items?itemName=antfu.vite) has its custom extension config for which URL it will start.
+## Timing
 
-Some developers don't like to auto-open the browser when running Vite and want to open the app manually, this way their browser doesn't have to remember a URL specific to their project. This also helps when working with multiple projects.
+The `timing` integer lets you bucket signals by update phase:
 
-## Possible improvements
+```csharp
+const int FixedTiming = 0;
+const int UpdateTiming = 1;
+const int LateTiming = 2;
 
-- Only require relative path in URL and read the server host name and port dynamically from Vite config, e.g. `/src/views/Dashboard/index.html`. This would add support for when the port is already in use and the next one is taken instead.
+void FixedUpdate() => ctx.Update(FixedTiming);
+void Update()      => ctx.Update(UpdateTiming);
+void LateUpdate()  => ctx.Update(LateTiming);
+```
+
+A signal and its dependents are only processed during the timing they were created with.
+
+## Requirements
+
+- Unity 2019.1+
+- .NET Standard 2.0 (NuGet target)
 
 ## License
 
-[MIT](LICENSE)
-
+[MIT](Signals%20Unity%20project/Assets/Signals/LICENSE.md)
