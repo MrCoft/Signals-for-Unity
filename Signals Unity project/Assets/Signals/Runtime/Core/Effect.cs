@@ -17,7 +17,7 @@ namespace Coft.Signals
             _context = context;
             Timing = timing;
             _action = action;
-            Dependencies = new HashSet<IUntypedSignal>();
+            Dependencies = new();
             _context.TimingToDirtyEffectsDict[timing].Add(this);
         }
         

@@ -57,7 +57,7 @@ namespace Coft.Signals.Tests
         public void SkipsBrokenComputeds()
         {
             var signals = new SignalContext();
-            var computedBroken = signals.Computed<int>(DefaultTiming, () => throw new Exception());
+            var computedBroken = signals.Computed<int>(DefaultTiming, () => throw new());
             var computed = signals.Computed(DefaultTiming, () => 1);
             try
             {
@@ -74,7 +74,7 @@ namespace Coft.Signals.Tests
         {
             var signals = new SignalContext();
             var effectHasRun = false;
-            signals.Effect(DefaultTiming, () => throw new Exception());
+            signals.Effect(DefaultTiming, () => throw new());
             signals.Effect(DefaultTiming, () => effectHasRun = true);
             try
             {
@@ -99,7 +99,7 @@ namespace Coft.Signals.Tests
                 x += 1;
                 if (x >= 2)
                 {
-                    throw new Exception();
+                    throw new();
                 }
 
                 return value.Value * 2;
@@ -139,7 +139,7 @@ namespace Coft.Signals.Tests
                 x += 1;
                 if (x >= 2)
                 {
-                    throw new Exception();
+                    throw new();
                 }
 
                 var read = value.Value;

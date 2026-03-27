@@ -113,7 +113,7 @@ namespace Coft.Signals
                     {
                         var hasAnyRun = false;
 
-                        newQueue = new HashSet<IUntypedComputed>();
+                        newQueue = new();
 
                         foreach (var computed in computedsQueue)
                         {
@@ -270,7 +270,7 @@ namespace Coft.Signals
 
             if (errors.Count > 0)
             {
-                throw new Exception(string.Join("\n", errors));
+                throw new(string.Join("\n", errors));
             }
         }
     }

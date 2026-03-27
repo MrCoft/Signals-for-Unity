@@ -14,7 +14,7 @@ namespace Coft.Signals
         public bool HasChangedThisPass { get; set; }
         public void Update()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public HashSet<IUntypedComputed> ComputedSubscribers { get; }
