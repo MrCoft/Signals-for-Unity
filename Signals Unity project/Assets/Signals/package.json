@@ -1,6 +1,6 @@
 {
   "name": "com.coft.signals",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "displayName": "Signals",
   "description": "Reactivity for .NET. Provides observable values and auto-registered side-effects.",
   "author": {
@@ -8,33 +8,16 @@
     "email": "devcoft@gmail.com",
     "url": "https://coft.dev"
   },
-  "unity": "2019.1",
-  "documentationUrl": "https://example.com/",
-  "changelogUrl": "https://example.com/changelog.html",
-  "licensesUrl": "https://example.com/licensing.html",
+  "unity": "2021.2",
+  "documentationUrl": "https://github.com/MrCoft/Signals-for-Unity",
+  "changelogUrl": "https://github.com/MrCoft/Signals-for-Unity/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/MrCoft/Signals-for-Unity/blob/main/LICENSE.md",
   "keywords": [
-    "asset",
-    "build",
-    "editor",
-    "tool",
-    "tools",
-    "utilities"
-  ],
-  "samples": [
-        {
-            "displayName": "HDRP Shaders",
-            "description": "Contains sample shaders for the High Definition render pipeline",
-            "path": "Samples~/SamplesHDRP"
-        },
-        {
-            "displayName": "URP Shaders",
-            "description": "Contains sample shaders for the Universal render pipeline",
-            "path": "Samples~/SamplesUniversalRP"
-        },
-        {
-            "displayName": "Standard RP Shaders",
-            "description": "Contains sample shaders for the Standard render pipeline",
-            "path": "Samples~/SamplesStandard"
-        }
-    ]
+    "reactive",
+    "signals",
+    "observable",
+    "effects",
+    "computed",
+    "ui"
+  ]
 }

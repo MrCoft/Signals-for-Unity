@@ -1,51 +1,20 @@
+# Changelog
 
-# Change Log
 All notable changes to this project will be documented in this file.
- 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
- 
-## [Unreleased] - yyyy-mm-dd
- 
-Here we write upgrading notes for brands. It's a team effort to make them as
-straightforward as possible.
- 
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
+
+## [0.1.0] - 2026-03-28
+
 ### Added
-- [PROJECTNAME-XXXX](http://tickets.projectname.com/browse/PROJECTNAME-XXXX)
-  MINOR Ticket title goes here.
-- [PROJECTNAME-YYYY](http://tickets.projectname.com/browse/PROJECTNAME-YYYY)
-  PATCH Ticket title goes here.
- 
-### Changed
- 
-### Fixed
- 
-## [1.2.4] - 2017-03-15
-  
-Here we would have the update steps for 1.2.4 for people to follow.
- 
-### Added
- 
-### Changed
-  
-- [PROJECTNAME-ZZZZ](http://tickets.projectname.com/browse/PROJECTNAME-ZZZZ)
-  PATCH Drupal.org is now used for composer.
- 
-### Fixed
- 
-- [PROJECTNAME-TTTT](http://tickets.projectname.com/browse/PROJECTNAME-TTTT)
-  PATCH Add logic to runsheet teaser delete to delete corresponding
-  schedule cards.
- 
-## [1.2.3] - 2017-03-14
- 
-### Added
-   
-### Changed
- 
-### Fixed
- 
-- [PROJECTNAME-UUUU](http://tickets.projectname.com/browse/PROJECTNAME-UUUU)
-  MINOR Fix module foo tests
-- [PROJECTNAME-RRRR](http://tickets.projectname.com/browse/PROJECTNAME-RRRR)
-  MAJOR Module foo's timeline uses the browser timezone for date resolution 
+- `Signal<T>` — observable value with deferred writes
+- `Computed<T>` — derived value that updates automatically when dependencies change
+- `Effect` — side effect that re-runs automatically when dependencies change
+- `ReactiveList<T>` — observable list that triggers dependents on mutation
+- `SignalContext` — owns and manages the reactive graph; call `Update(timing)` to flush changes
+- Timing system — signals, computeds, and effects each declare a timing bucket; `Update(timing)` only flushes that bucket, allowing separate update loops (e.g. Update, FixedUpdate, LateUpdate)
+- Cross-timing dependencies — a computed or effect at timing 3 can read a signal at timing 1 and will update at its own timing, not the signal's
+- Custom equality comparers on `Signal<T>` and `Computed<T>` to control when dependents are notified
+- `Dispose()` on `Computed<T>` and `Effect` to stop updates and unsubscribe from the graph
+- Error resilience — a throwing computed or effect does not prevent others from running; errors are collected and thrown together at the end of `Update`
+- Cycle detection — circular dependencies are detected and reported after 50 passes
