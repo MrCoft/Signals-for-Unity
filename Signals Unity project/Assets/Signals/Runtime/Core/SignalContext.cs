@@ -102,6 +102,11 @@ namespace Coft.Signals
                         if (computed.Dependencies.All(dep => dep.IsReady))
                         {
                             computed.Update();
+                            if (computed.HasChangedThisPass)
+                            {
+                                computedsQueue.UnionWith(computed.ComputedSubscribers);
+                                TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
+                            }
                         }
                         else
                         {
