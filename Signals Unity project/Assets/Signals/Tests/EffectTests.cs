@@ -160,5 +160,26 @@ namespace Coft.Signals.Tests
 
             Assert.AreEqual(21, writeValue1.Value);
         }
+
+        [Test]
+        public void Effect_Dispose_StopsRunning()
+        {
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
+            var effectHasRun = false;
+            var effect = context.Effect(DefaultTiming, () =>
+            {
+                _ = value.Value;
+                effectHasRun = true;
+            });
+            context.Update(DefaultTiming);
+
+            effect.Dispose();
+            value.Value = 2;
+            effectHasRun = false;
+            context.Update(DefaultTiming);
+
+            Assert.That(effectHasRun, Is.False);
+        }
     }
 }

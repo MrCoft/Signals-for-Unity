@@ -7,7 +7,7 @@ namespace Coft.Signals.Tests
         private const int DefaultTiming = 0;
 
         [Test]
-        public void Computed_SignalChange_UpdatesValue()
+        public void Computed_OnChange_Updates()
         {
             var context = new SignalContext();
             var value = context.Signal(DefaultTiming, 1);

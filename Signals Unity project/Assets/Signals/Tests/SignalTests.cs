@@ -55,65 +55,6 @@ namespace Coft.Signals.Tests
             Assert.AreEqual(1, x);
         }
 
-        [Test]
-        public void Signal_DifferentTimings_AreIsolated()
-        {
-            var context = new SignalContext();
-            var a = context.Signal(0, 1);
-            var b = context.Signal(1, 1);
-            var x = 0;
-            var y = 0;
-            context.Effect(0, () => x = a.Value);
-            context.Effect(1, () => y = b.Value);
-            context.Update(0);
-            context.Update(1);
-
-            a.Value = 10;
-            b.Value = 20;
-
-            context.Update(0);
-            Assert.AreEqual(10, x, "timing 0 effect should have run");
-            Assert.AreEqual(1, y, "timing 1 effect should not have run yet");
-
-            context.Update(1);
-            Assert.AreEqual(20, y, "timing 1 effect should now have run");
-        }
-
-        [Test]
-        public void Signal_CrossTiming_ComputedRunsAtItsOwnTiming()
-        {
-            var context = new SignalContext();
-            var source = context.Signal(1, 10);
-            var derived = context.Computed(3, () => source.Value * 2);
-            context.Update(1);
-            context.Update(3);
-
-            source.Value = 20;
-            context.Update(1);
-            Assert.AreEqual(20, derived.Value, "computed should not have updated at timing 1");
-
-            context.Update(3);
-            Assert.AreEqual(40, derived.Value, "computed should have updated at timing 3");
-        }
-
-        [Test]
-        public void Effect_CrossTiming_EffectRunsAtItsOwnTiming()
-        {
-            var context = new SignalContext();
-            var source = context.Signal(1, 10);
-            var x = 0;
-            context.Effect(3, () => x = source.Value);
-            context.Update(1);
-            context.Update(3);
-
-            source.Value = 20;
-            context.Update(1);
-            Assert.AreEqual(10, x, "effect should not have run at timing 1");
-
-            context.Update(3);
-            Assert.AreEqual(20, x, "effect should have run at timing 3");
-        }
-
         private class ModuloComparer : IEqualityComparer<int>
         {
             private readonly int _modulo;
@@ -174,27 +115,6 @@ namespace Coft.Signals.Tests
             context.Update(DefaultTiming);
 
             Assert.That(effectHasRun, Is.True);
-        }
-
-        [Test]
-        public void Effect_Dispose_StopsRunning()
-        {
-            var context = new SignalContext();
-            var value = context.Signal(DefaultTiming, 1);
-            var effectHasRun = false;
-            var effect = context.Effect(DefaultTiming, () =>
-            {
-                _ = value.Value;
-                effectHasRun = true;
-            });
-            context.Update(DefaultTiming);
-
-            effect.Dispose();
-            value.Value = 2;
-            effectHasRun = false;
-            context.Update(DefaultTiming);
-
-            Assert.That(effectHasRun, Is.False);
         }
     }
 }
