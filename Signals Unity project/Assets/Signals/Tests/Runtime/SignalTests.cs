@@ -42,8 +42,8 @@ namespace Coft.Signals.Tests
             var x = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var read = value.Value;
-                read = computed.Value;
+                _ = value.Value;
+                _ = computed.Value;
                 x += 1;
             });
             signals.Update(DefaultTiming);
@@ -118,7 +118,7 @@ namespace Coft.Signals.Tests
             var effectHasRun = false;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = value.Value;
+                _ = value.Value;
                 effectHasRun = true;
             });
             signals.Update(DefaultTiming);
@@ -139,7 +139,7 @@ namespace Coft.Signals.Tests
             var effectHasRun = false;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = value.Value;
+                _ = value.Value;
                 effectHasRun = true;
             });
             signals.Update(DefaultTiming);
@@ -159,7 +159,7 @@ namespace Coft.Signals.Tests
             var effectHasRun = false;
             var effect = signals.Effect(DefaultTiming, () =>
             {
-                var read = value.Value;
+                _ = value.Value;
                 effectHasRun = true;
             });
             signals.Update(DefaultTiming);

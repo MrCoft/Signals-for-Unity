@@ -51,7 +51,7 @@ namespace Coft.Signals.Tests
             Computed<bool> computedCondition = null;
             Computed<int> resultTrue = null;
             var numberOfRuns = 0;
-            var compositeComputed = signals.Computed(DefaultTiming, () =>
+            _ = signals.Computed(DefaultTiming, () =>
             {
                 numberOfRuns += 1;
                 return computedCondition!.Value ? resultTrue!.Value : 0;
@@ -72,7 +72,7 @@ namespace Coft.Signals.Tests
             signals.Effect(DefaultTiming, () => writeValue.Value = readValue.Value);
             signals.Effect(DefaultTiming, () =>
             {
-                var read = writeValue.Value;
+                _ = writeValue.Value;
                 x += 1;
             });
             signals.Update(DefaultTiming);

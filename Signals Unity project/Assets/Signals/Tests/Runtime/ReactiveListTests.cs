@@ -45,7 +45,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -67,7 +67,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -89,7 +89,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -111,7 +111,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -133,7 +133,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -155,7 +155,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -175,7 +175,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -195,7 +195,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -218,7 +218,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             signals.Effect(DefaultTiming, () =>
             {
-                var _ = list.Count;
+                _ = list.Count;
                 runs++;
             });
             signals.Update(DefaultTiming);
@@ -271,7 +271,11 @@ namespace Coft.Signals.Tests
             signals.Effect(DefaultTiming, () =>
             {
                 sum = 0;
-                foreach (var item in list) sum += item;
+
+                foreach (var item in list)
+                {
+                    sum += item;
+                }
             });
             signals.Update(DefaultTiming);
 

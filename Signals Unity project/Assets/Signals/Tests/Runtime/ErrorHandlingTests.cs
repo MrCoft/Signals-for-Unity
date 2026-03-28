@@ -1,5 +1,5 @@
-using System;
 using NUnit.Framework;
+using System;
 
 namespace Coft.Signals.Tests
 {
@@ -95,7 +95,7 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
-            var computed = signals.Computed(DefaultTiming, () =>
+            _ = signals.Computed(DefaultTiming, () =>
             {
                 x += 1;
                 if (x >= 2) throw new();
@@ -135,7 +135,7 @@ namespace Coft.Signals.Tests
             {
                 x += 1;
                 if (x >= 2) throw new();
-                var read = value.Value;
+                _ = value.Value;
             });
             signals.Update(DefaultTiming);
             value.Value += 1;
