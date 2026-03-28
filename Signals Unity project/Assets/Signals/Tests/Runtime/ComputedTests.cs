@@ -32,6 +32,73 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
+        public void DeepChain_UpdatesPropagateToEnd()
+        {
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var b = signals.Computed(DefaultTiming, () => a.Value + 1);
+            var c = signals.Computed(DefaultTiming, () => b.Value + 1);
+            var d = signals.Computed(DefaultTiming, () => c.Value + 1);
+            signals.Update(DefaultTiming);
+
+            a.Value = 10;
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(11, b.Value);
+            Assert.AreEqual(12, c.Value);
+            Assert.AreEqual(13, d.Value);
+        }
+
+        [Test]
+        public void Dispose_StopsUpdates()
+        {
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var b = signals.Computed(DefaultTiming, () => a.Value * 2);
+            signals.Update(DefaultTiming);
+
+            b.Dispose();
+            a.Value = 5;
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(2, b.Value);
+        }
+
+        [Test]
+        public void MultipleSignalDeps_UpdatesWhenEitherChanges()
+        {
+            var signals = new SignalContext();
+            var x = signals.Signal(DefaultTiming, 1);
+            var y = signals.Signal(DefaultTiming, 2);
+            var sum = signals.Computed(DefaultTiming, () => x.Value + y.Value);
+            signals.Update(DefaultTiming);
+
+            x.Value = 10;
+            signals.Update(DefaultTiming);
+            Assert.AreEqual(12, sum.Value);
+
+            y.Value = 20;
+            signals.Update(DefaultTiming);
+            Assert.AreEqual(30, sum.Value);
+        }
+
+        [Test]
+        public void NoRerunWhenNothingChanged()
+        {
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var runs = 0;
+            signals.Computed(DefaultTiming, () => { runs++; return a.Value; });
+            signals.Update(DefaultTiming);
+            var runsAfterSettle = runs;
+
+            signals.Update(DefaultTiming);
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(runsAfterSettle, runs);
+        }
+
+        [Test]
         public void SameValueIsIgnored()
         {
             var signals = new SignalContext();

@@ -79,6 +79,57 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
+        public void TriggeredViaComputed()
+        {
+            // effect reads computed, not signal directly — change to signal must still reach effect
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var b = signals.Computed(DefaultTiming, () => a.Value * 2);
+            var x = 0;
+            signals.Effect(DefaultTiming, () => x = b.Value);
+            signals.Update(DefaultTiming);
+
+            a.Value = 5;
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(10, x);
+        }
+
+        [Test]
+        public void RunsOnlyOnce_WhenSignalAndComputedDepBothChange()
+        {
+            // effect reads both signal and computed(signal); one change should fire the effect once
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var b = signals.Computed(DefaultTiming, () => a.Value * 2);
+            var runs = 0;
+            signals.Effect(DefaultTiming, () => { var _ = a.Value + b.Value; runs++; });
+            signals.Update(DefaultTiming);
+            runs = 0;
+
+            a.Value = 5;
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(1, runs);
+        }
+
+        [Test]
+        public void NoRerunWhenNothingChanged()
+        {
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var runs = 0;
+            signals.Effect(DefaultTiming, () => { var _ = a.Value; runs++; });
+            signals.Update(DefaultTiming);
+            runs = 0;
+
+            signals.Update(DefaultTiming);
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(0, runs);
+        }
+
+        [Test]
         public void MultipleEffectsOverwrite()
         {
             var signals = new SignalContext();
