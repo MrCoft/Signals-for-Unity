@@ -49,11 +49,9 @@ namespace Coft.Signals
             if (_isDirty)
             {
                 foreach (var computed in ComputedSubscribers)
-                {
-                    _context.MarkComputedDirty(Timing, computed);
-                }
-
-                _context.TimingToDirtyEffectsDict[Timing].UnionWith(EffectSubscribers);
+                    _context.MarkComputedDirty(computed.Timing, computed);
+                foreach (var effect in EffectSubscribers)
+                    _context.TimingToDirtyEffectsDict[effect.Timing].Add(effect);
             }
             HasChangedThisPass = _isDirty;
             _isDirty = false;

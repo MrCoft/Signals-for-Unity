@@ -302,5 +302,40 @@ namespace Coft.Signals.Tests
 
             Assert.That(hasThree, Is.True);
         }
+
+        [Test]
+        public void List_CrossTiming_ComputedRunsAtItsOwnTiming()
+        {
+            var context = new SignalContext();
+            var list = context.List<int>(1);
+            var count = context.Computed(3, () => list.Count);
+            context.Update(1);
+            context.Update(3);
+
+            list.Add(1);
+            context.Update(1);
+            Assert.AreEqual(0, count.Value, "computed should not have updated at timing 1");
+
+            context.Update(3);
+            Assert.AreEqual(1, count.Value, "computed should have updated at timing 3");
+        }
+
+        [Test]
+        public void List_CrossTiming_EffectRunsAtItsOwnTiming()
+        {
+            var context = new SignalContext();
+            var list = context.List<int>(1);
+            var snapshot = 0;
+            context.Effect(3, () => snapshot = list.Count);
+            context.Update(1);
+            context.Update(3);
+
+            list.Add(1);
+            context.Update(1);
+            Assert.AreEqual(0, snapshot, "effect should not have run at timing 1");
+
+            context.Update(3);
+            Assert.AreEqual(1, snapshot, "effect should have run at timing 3");
+        }
     }
 }
