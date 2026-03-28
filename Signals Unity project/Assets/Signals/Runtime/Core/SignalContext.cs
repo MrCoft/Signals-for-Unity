@@ -58,6 +58,12 @@ namespace Coft.Signals
             return new(this, timing, getter, comparer);
         }
 
+        public ReactiveList<T> List<T>(int timing)
+        {
+            InitializeTiming(timing);
+            return new(this, timing);
+        }
+
         public Effect Effect(int timing, Action action)
         {
             InitializeTiming(timing);
