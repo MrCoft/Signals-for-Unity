@@ -6,10 +6,11 @@ namespace Coft.Signals
     public class ReactiveList<T> : IUntypedSignal, IList<T>
     {
         private readonly SignalContext _context;
-        private readonly List<T> _items = new();
 
         public int Timing;
-        public bool IsDirty;
+
+        private readonly List<T> _items = new();
+        private bool _isDirty;
 
         public int Level
         {
@@ -18,7 +19,7 @@ namespace Coft.Signals
                 return 0;
             }
         }
-        public bool IsReady { get; set; }
+        public bool IsReady { get; set; } = true;
         public bool HasChangedThisPass { get; set; }
         public HashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
         public HashSet<Effect> EffectSubscribers { get; } = new();
@@ -27,7 +28,6 @@ namespace Coft.Signals
         {
             _context = context;
             Timing = timing;
-            IsReady = true;
         }
 
         private void Track()
@@ -37,16 +37,16 @@ namespace Coft.Signals
 
         private void MarkDirty()
         {
-            if (!IsDirty)
+            if (!_isDirty)
             {
-                IsDirty = true;
+                _isDirty = true;
                 _context.TimingToDirtySignalsDict[Timing].Add(this);
             }
         }
 
         public void Update()
         {
-            if (IsDirty)
+            if (_isDirty)
             {
                 foreach (var computed in ComputedSubscribers)
                 {
@@ -55,11 +55,11 @@ namespace Coft.Signals
 
                 _context.TimingToDirtyEffectsDict[Timing].UnionWith(EffectSubscribers);
             }
-            HasChangedThisPass = IsDirty;
-            IsDirty = false;
+            HasChangedThisPass = _isDirty;
+            _isDirty = false;
         }
 
-        // Read operations — register dependency
+        // NOTE: IList<T> Read operations — register dependency
 
         public int Count
         {
@@ -69,6 +69,7 @@ namespace Coft.Signals
                 return _items.Count;
             }
         }
+
         public bool IsReadOnly
         {
             get
@@ -91,16 +92,18 @@ namespace Coft.Signals
             }
         }
 
-        // Returns struct enumerator directly so foreach avoids boxing
+        // NOTE: Returns struct enumerator directly so foreach avoids boxing
         public List<T>.Enumerator GetEnumerator()
         {
             Track();
             return _items.GetEnumerator();
         }
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             return GetEnumerator();
         }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -111,18 +114,20 @@ namespace Coft.Signals
             Track();
             return _items.Contains(item);
         }
+
         public int IndexOf(T item)
         {
             Track();
             return _items.IndexOf(item);
         }
+
         public void CopyTo(T[] array, int arrayIndex)
         {
             Track();
             _items.CopyTo(array, arrayIndex);
         }
 
-        // Write operations — mark dirty
+        // NOTE: IList<T> Write operations — mark dirty
 
         public void Add(T item)
         {

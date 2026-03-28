@@ -173,6 +173,7 @@ namespace Coft.Signals.Tests
         private class ModuloComparer : IEqualityComparer<int>
         {
             private readonly int _modulo;
+
             public ModuloComparer(int modulo)
             {
                 _modulo = modulo;

@@ -5,19 +5,19 @@ namespace Coft.Signals
 {
     public class Effect : IDisposable
     {
-        private SignalContext _context;
+        private readonly SignalContext _context;
+        private readonly Action _action;
 
         public int Timing;
 
-        private readonly Action _action;
-        public HashSet<IUntypedSignal> Dependencies;
+        public HashSet<IUntypedSignal> Dependencies = new();
 
         public Effect(SignalContext context, int timing, Action action)
         {
             _context = context;
-            Timing = timing;
             _action = action;
-            Dependencies = new();
+            Timing = timing;
+
             _context.TimingToDirtyEffectsDict[timing].Add(this);
         }
 
@@ -48,6 +48,7 @@ namespace Coft.Signals
             previousDeps.UnionWith(Dependencies);
             Dependencies.Clear();
             _context.DependenciesCollector.Clear();
+
             try
             {
                 _action();
@@ -55,6 +56,7 @@ namespace Coft.Signals
             catch (Exception e)
             {
                 Dependencies.UnionWith(previousDeps);
+
                 foreach (var signal in previousDeps)
                 {
                     signal.EffectSubscribers.Add(this);

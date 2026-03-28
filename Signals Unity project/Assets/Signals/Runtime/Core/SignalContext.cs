@@ -21,27 +21,8 @@ namespace Coft.Signals
             if (!TimingToDirtySignalsDict.ContainsKey(timing))
             {
                 TimingToDirtySignalsDict.Add(timing, new());
-                _dirtyComputeds.Add(timing, new());
                 TimingToDirtyEffectsDict.Add(timing, new());
-            }
-        }
-
-        public void MarkComputedDirty(int timing, IUntypedComputed computed)
-        {
-            computed.IsReady = false;
-            var buckets = _dirtyComputeds[timing];
-            var level = computed.Level;
-            EnsureLevel(buckets, level);
-            buckets[level].Add(computed);
-        }
-
-        public void RemoveDirtyComputed(int timing, IUntypedComputed computed)
-        {
-            var buckets = _dirtyComputeds[timing];
-            var level = computed.Level;
-            if (level < buckets.Count)
-            {
-                buckets[level].Remove(computed);
+                _dirtyComputeds.Add(timing, new());
             }
         }
 
@@ -57,16 +38,16 @@ namespace Coft.Signals
             return new(this, timing, getter, comparer);
         }
 
-        public ReactiveList<T> List<T>(int timing)
-        {
-            InitializeTiming(timing);
-            return new(this, timing);
-        }
-
         public Effect Effect(int timing, Action action)
         {
             InitializeTiming(timing);
             return new(this, timing, action);
+        }
+
+        public ReactiveList<T> List<T>(int timing)
+        {
+            InitializeTiming(timing);
+            return new(this, timing);
         }
 
         public void Update(int timing)
@@ -282,6 +263,26 @@ namespace Coft.Signals
             }
 
             return false;
+        }
+
+        public void MarkComputedDirty(int timing, IUntypedComputed computed)
+        {
+            computed.IsReady = false;
+            var buckets = _dirtyComputeds[timing];
+            var level = computed.Level;
+            EnsureLevel(buckets, level);
+            buckets[level].Add(computed);
+        }
+
+        public void RemoveDirtyComputed(int timing, IUntypedComputed computed)
+        {
+            var buckets = _dirtyComputeds[timing];
+            var level = computed.Level;
+
+            if (level < buckets.Count)
+            {
+                buckets[level].Remove(computed);
+            }
         }
     }
 }

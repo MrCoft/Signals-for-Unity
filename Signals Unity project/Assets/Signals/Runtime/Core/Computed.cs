@@ -6,35 +6,28 @@ namespace Coft.Signals
     public class Computed<T> : IUntypedComputed, IDisposable
     {
         private readonly SignalContext _context;
-
-        public int Timing { get; }
-        public int Level { get; private set; }
-
         private readonly Func<T> _getter;
         private readonly IEqualityComparer<T> _comparer;
+
+        public int Timing { get; }
+
         private T _cachedValue;
         private T _newValue;
 
-        public bool HasChangedThisPass { get; set; }
-
-        public HashSet<IUntypedSignal> Dependencies { get; }
+        public int Level { get; private set; }
         public bool IsReady { get; set; }
-        public HashSet<IUntypedComputed> ComputedSubscribers { get; }
-        public HashSet<Effect> EffectSubscribers { get; }
+        public bool HasChangedThisPass { get; set; }
+        public HashSet<IUntypedSignal> Dependencies { get; } = new();
+        public HashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
+        public HashSet<Effect> EffectSubscribers { get; } = new();
 
         public Computed(SignalContext context, int timing, Func<T> getter, IEqualityComparer<T> comparer = null)
         {
             _context = context;
-            Timing = timing;
             _getter = getter;
             _comparer = comparer ?? EqualityComparer<T>.Default;
-            _cachedValue = default;
-            _newValue = default;
-            Dependencies = new();
-            ComputedSubscribers = new();
-            EffectSubscribers = new();
-            IsReady = false;
-            HasChangedThisPass = false;
+            Timing = timing;
+
             _context.MarkComputedDirty(timing, this);
         }
 
@@ -65,6 +58,7 @@ namespace Coft.Signals
         public void Update()
         {
             HasChangedThisPass = !_comparer.Equals(_newValue, _cachedValue);
+
             if (HasChangedThisPass)
             {
                 _cachedValue = _newValue;
@@ -93,6 +87,7 @@ namespace Coft.Signals
             catch (Exception e)
             {
                 Dependencies.UnionWith(previousDeps);
+
                 foreach (var signal in previousDeps)
                 {
                     signal.ComputedSubscribers.Add(this);
@@ -109,9 +104,13 @@ namespace Coft.Signals
             }
 
             var maxDepLevel = 0;
+
             foreach (var dep in _context.DependenciesCollector)
             {
-                if (dep.Level > maxDepLevel) maxDepLevel = dep.Level;
+                if (dep.Level > maxDepLevel)
+                {
+                    maxDepLevel = dep.Level;
+                }
             }
 
             Level = maxDepLevel + 1;

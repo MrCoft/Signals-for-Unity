@@ -4,11 +4,15 @@ namespace Coft.Signals
 {
     public class Signal<T> : IUntypedSignal
     {
-        private SignalContext _context;
+        private readonly SignalContext _context;
+        private readonly IEqualityComparer<T> _comparer;
 
         public int Timing;
 
         private T _cachedValue;
+        private T _newValue;
+        private bool _isDirty;
+
         public int Level
         {
             get
@@ -16,27 +20,18 @@ namespace Coft.Signals
                 return 0;
             }
         }
-
-        public bool IsDirty;
+        public bool IsReady { get; set; } = true;
         public bool HasChangedThisPass { get; set; }
-        public bool IsReady { get; set; }
-        private T _newValue;
-        private readonly IEqualityComparer<T> _comparer;
-        public HashSet<IUntypedComputed> ComputedSubscribers { get; }
-        public HashSet<Effect> EffectSubscribers { get; }
+        public HashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
+        public HashSet<Effect> EffectSubscribers { get; } = new();
 
         public Signal(SignalContext context, int timing, T value, IEqualityComparer<T> comparer = null)
         {
             _context = context;
-            Timing = timing;
             _comparer = comparer ?? EqualityComparer<T>.Default;
-
+            Timing = timing;
             _cachedValue = value;
             _newValue = value;
-            IsDirty = false;
-            IsReady = true;
-            ComputedSubscribers = new();
-            EffectSubscribers = new();
         }
 
         public T Value
@@ -51,7 +46,7 @@ namespace Coft.Signals
                 if (!_comparer.Equals(value, _newValue))
                 {
                     _newValue = value;
-                    IsDirty = true;
+                    _isDirty = true;
                     _context.TimingToDirtySignalsDict[Timing].Add(this);
                 }
             }
@@ -59,7 +54,7 @@ namespace Coft.Signals
 
         public void Update()
         {
-            if (IsDirty)
+            if (_isDirty)
             {
                 foreach (var computed in ComputedSubscribers)
                 {
@@ -72,9 +67,9 @@ namespace Coft.Signals
                 }
             }
 
-            HasChangedThisPass = IsDirty;
+            HasChangedThisPass = _isDirty;
             _cachedValue = _newValue;
-            IsDirty = false;
+            _isDirty = false;
         }
     }
 }
