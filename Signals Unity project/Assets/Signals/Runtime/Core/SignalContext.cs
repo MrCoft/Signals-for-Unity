@@ -87,6 +87,11 @@ namespace Coft.Signals
                 }
             }
 
+            // Tracks which computeds were committed during this Update() call.
+            // Used as the cycle-prevention guard in CommitComputed — avoids relying on
+            // HasChangedThisPass, which is never reset between Update() calls and goes stale.
+            var committed = new HashSet<IUntypedComputed>();
+
             // Commit those whose deps are all settled. Defer the rest.
             var deferred = new HashSet<IUntypedComputed>();
             foreach (var computed in pending)
@@ -94,7 +99,7 @@ namespace Coft.Signals
                 if (!computed.Dependencies.All(dep => dep.IsReady) || HasStaleComputedDep(computed))
                     deferred.Add(computed);
                 else
-                    CommitComputed(computed, deferred, timing);
+                    CommitComputed(computed, deferred, timing, committed);
             }
 
             // Resolve deferred in dependency order, breaking cycles if stuck.
@@ -126,12 +131,12 @@ namespace Coft.Signals
                     }
                     else
                     {
-                        CommitComputed(computed, next, timing);
+                        CommitComputed(computed, next, timing, committed);
                     }
                 }
 
                 if (!anyRan)
-                    BreakCycle(deferred, next, timing, errors);
+                    BreakCycle(deferred, next, timing, errors, committed);
 
                 deferred = next;
             }
@@ -159,12 +164,17 @@ namespace Coft.Signals
             TimingToDirtyEffectsDict[timing].UnionWith(deferred);
         }
 
-        private void CommitComputed(IUntypedComputed computed, HashSet<IUntypedComputed> queue, int timing)
+        private void CommitComputed(IUntypedComputed computed, HashSet<IUntypedComputed> queue, int timing, HashSet<IUntypedComputed> committed)
         {
             computed.Update();
+            committed.Add(computed);
             if (!computed.HasChangedThisPass) return;
 
-            queue.UnionWith(computed.ComputedSubscribers);
+            foreach (var subscriber in computed.ComputedSubscribers)
+            {
+                if (!committed.Contains(subscriber))
+                    queue.Add(subscriber);
+            }
             TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
         }
 
@@ -192,13 +202,13 @@ namespace Coft.Signals
             }
         }
 
-        private void BreakCycle(HashSet<IUntypedComputed> deferred, HashSet<IUntypedComputed> next, int timing, List<string> errors)
+        private void BreakCycle(HashSet<IUntypedComputed> deferred, HashSet<IUntypedComputed> next, int timing, List<string> errors, HashSet<IUntypedComputed> committed)
         {
             errors.Add("Could not resolve signal graph; possible cycle detected; undefined behavior will follow");
 
             var computed = ComputedWithFewestUnreadyDeps(deferred);
             if (TryRun(computed, errors))
-                CommitComputed(computed, next, timing);
+                CommitComputed(computed, next, timing, committed);
             else
                 computed.Update();
         }
