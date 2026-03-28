@@ -50,5 +50,37 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             Assert.AreEqual(0, x);
         }
+        
+        [Test]
+        public void TransitiveChain_UpdatesPropagateToEnd()
+        {
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var b = signals.Computed(DefaultTiming, () => a.Value * 2);
+            var c = signals.Computed(DefaultTiming, () => b.Value + 1);
+            signals.Update(DefaultTiming);
+
+            a.Value = 5;
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(10, b.Value, "b should equal signal * 2");
+            Assert.AreEqual(11, c.Value, "c should equal b + 1 (transitive update)");
+        }
+        
+        [Test]
+        public void DiamondDependency_Works()
+        {
+            var signals = new SignalContext();
+            var a = signals.Signal(DefaultTiming, 1);
+            var b = signals.Computed(DefaultTiming, () => a.Value * 2);
+            var c = signals.Computed(DefaultTiming, () => a.Value + b.Value);
+            signals.Update(DefaultTiming);
+
+            a.Value = 5;
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(10, b.Value, "b should equal signal * 2");
+            Assert.AreEqual(15, c.Value, "c should equal signal + b (no glitch)");
+        }
     }
 }
