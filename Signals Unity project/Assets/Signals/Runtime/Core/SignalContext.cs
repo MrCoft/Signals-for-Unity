@@ -17,6 +17,7 @@ namespace Coft.Signals
         private readonly List<IUntypedComputed> _levelBuffer = new();
         private readonly HashSet<IUntypedComputed> _committed = new();
         private readonly HashSet<Effect> _deferredEffects = new();
+        private readonly List<string> _errors = new();
 
         private void InitializeTiming(int timing)
         {
@@ -67,23 +68,23 @@ namespace Coft.Signals
         {
             InitializeTiming(timing);
 
-            var errors = new List<string>();
+            _errors.Clear();
             var pass = 0;
 
             while (pass++ < 50)
             {
                 FlushSignals(timing);
-                FlushComputeds(timing, errors);
-                FlushEffects(timing, errors);
+                FlushComputeds(timing, _errors);
+                FlushEffects(timing, _errors);
 
                 if (TimingToDirtySignalsDict[timing].Count == 0) break;
             }
 
             if (TimingToDirtySignalsDict[timing].Count > 0)
-                errors.Add("50 passes without update");
+                _errors.Add("50 passes without update");
 
-            if (errors.Count > 0)
-                throw new(string.Join("\n", errors));
+            if (_errors.Count > 0)
+                throw new(string.Join("\n", _errors));
         }
 
         private void FlushSignals(int timing)
