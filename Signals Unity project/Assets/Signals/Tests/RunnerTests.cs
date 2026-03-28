@@ -9,10 +9,10 @@ namespace Coft.Signals.Tests
         [Test]
         public void Runner_ComputedCreatedBeforeDep_FirstRunSeesStaleValue()
         {
-            var signals = new SignalContext();
+            var context = new SignalContext();
             Computed<int> a = null;
             int? firstWrite = null;
-            var b = signals.Computed(DefaultTiming, () =>
+            var b = context.Computed(DefaultTiming, () =>
             {
                 var value = a!.Value;
                 if (firstWrite == null)
@@ -22,8 +22,8 @@ namespace Coft.Signals.Tests
 
                 return value + 1;
             });
-            a = signals.Computed(DefaultTiming, () => 1);
-            signals.Update(DefaultTiming);
+            a = context.Computed(DefaultTiming, () => 1);
+            context.Update(DefaultTiming);
             Assert.AreEqual(2, b.Value);
             Assert.AreEqual(0, firstWrite);
         }
@@ -31,55 +31,55 @@ namespace Coft.Signals.Tests
         [Test]
         public void Runner_SignalOnlyDeps_RunsOnce()
         {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
             var x = 0;
-            signals.Computed(DefaultTiming, () =>
+            context.Computed(DefaultTiming, () =>
             {
                 x += 1;
                 return value.Value * 2;
             });
-            signals.Update(DefaultTiming);
+            context.Update(DefaultTiming);
             Assert.AreEqual(1, x);
         }
 
         [Test]
         public void Runner_DepChangesOnFirstPass_CausesRerun()
         {
-            var signals = new SignalContext();
-            var condition = signals.Signal(DefaultTiming, true);
+            var context = new SignalContext();
+            var condition = context.Signal(DefaultTiming, true);
             Computed<bool> computedCondition = null;
             Computed<int> resultTrue = null;
             var numberOfRuns = 0;
-            _ = signals.Computed(DefaultTiming, () =>
+            _ = context.Computed(DefaultTiming, () =>
             {
                 numberOfRuns += 1;
                 return computedCondition!.Value ? resultTrue!.Value : 0;
             });
-            resultTrue = signals.Computed(DefaultTiming, () => computedCondition!.Value ? 2 : 1);
-            computedCondition = signals.Computed(DefaultTiming, () => condition.Value);
-            signals.Update(DefaultTiming);
+            resultTrue = context.Computed(DefaultTiming, () => computedCondition!.Value ? 2 : 1);
+            computedCondition = context.Computed(DefaultTiming, () => condition.Value);
+            context.Update(DefaultTiming);
             Assert.AreEqual(3, numberOfRuns);
         }
 
         [Test]
         public void Runner_SignalOverwrittenByEffect_WaitsForConsistentState()
         {
-            var signals = new SignalContext();
-            var readValue = signals.Signal(DefaultTiming, 0);
-            var writeValue = signals.Signal(DefaultTiming, 0);
+            var context = new SignalContext();
+            var readValue = context.Signal(DefaultTiming, 0);
+            var writeValue = context.Signal(DefaultTiming, 0);
             var x = 0;
-            signals.Effect(DefaultTiming, () => writeValue.Value = readValue.Value);
-            signals.Effect(DefaultTiming, () =>
+            context.Effect(DefaultTiming, () => writeValue.Value = readValue.Value);
+            context.Effect(DefaultTiming, () =>
             {
                 _ = writeValue.Value;
                 x += 1;
             });
-            signals.Update(DefaultTiming);
+            context.Update(DefaultTiming);
             x = 0;
             readValue.Value = 10;
             writeValue.Value = 9;
-            signals.Update(DefaultTiming);
+            context.Update(DefaultTiming);
             Assert.AreEqual(1, x);
         }
     }

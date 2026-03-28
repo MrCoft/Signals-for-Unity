@@ -10,14 +10,14 @@ namespace Coft.Signals.Tests
         [Test]
         public void Computed_CyclicDependency_ThrowsException()
         {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
             Computed<int> a = null;
-            var b = signals.Computed(DefaultTiming, () => a!.Value + 1);
-            a = signals.Computed(DefaultTiming, () => b.Value + value.Value);
+            var b = context.Computed(DefaultTiming, () => a!.Value + 1);
+            a = context.Computed(DefaultTiming, () => b.Value + value.Value);
             var exception = Assert.Throws<Exception>(() =>
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             });
             Assert.That(exception.Message, Does.Contain("Could not resolve signal graph; possible cycle detected; undefined behavior will follow"));
         }
@@ -25,14 +25,14 @@ namespace Coft.Signals.Tests
         [Test]
         public void Computed_CyclicDependency_ProducesSomeValue()
         {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
             Computed<int> a = null;
-            var b = signals.Computed(DefaultTiming, () => a!.Value + 1);
-            a = signals.Computed(DefaultTiming, () => b.Value + value.Value);
+            var b = context.Computed(DefaultTiming, () => a!.Value + 1);
+            a = context.Computed(DefaultTiming, () => b.Value + value.Value);
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
@@ -44,12 +44,12 @@ namespace Coft.Signals.Tests
         [Test]
         public void Effect_InfiniteLoop_ThrowsException()
         {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
-            signals.Effect(DefaultTiming, () => value.Value += 1);
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
+            context.Effect(DefaultTiming, () => value.Value += 1);
             var exception = Assert.Throws<Exception>(() =>
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             });
             Assert.That(exception.Message, Does.Contain("50 passes without update"));
         }
@@ -57,12 +57,12 @@ namespace Coft.Signals.Tests
         [Test]
         public void Computed_ThrowingGetter_OtherComputedsContinue()
         {
-            var signals = new SignalContext();
-            signals.Computed<int>(DefaultTiming, () => throw new());
-            var computed = signals.Computed(DefaultTiming, () => 1);
+            var context = new SignalContext();
+            context.Computed<int>(DefaultTiming, () => throw new());
+            var computed = context.Computed(DefaultTiming, () => 1);
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
@@ -74,13 +74,13 @@ namespace Coft.Signals.Tests
         [Test]
         public void Effect_ThrowingAction_OtherEffectsContinue()
         {
-            var signals = new SignalContext();
+            var context = new SignalContext();
             var effectHasRun = false;
-            signals.Effect(DefaultTiming, () => throw new());
-            signals.Effect(DefaultTiming, () => effectHasRun = true);
+            context.Effect(DefaultTiming, () => throw new());
+            context.Effect(DefaultTiming, () => effectHasRun = true);
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
@@ -92,20 +92,20 @@ namespace Coft.Signals.Tests
         [Test]
         public void Computed_ThrowingGetter_RerunsWithOldDependencies()
         {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
             var x = 0;
-            _ = signals.Computed(DefaultTiming, () =>
+            _ = context.Computed(DefaultTiming, () =>
             {
                 x += 1;
                 if (x >= 2) throw new();
                 return value.Value * 2;
             });
-            signals.Update(DefaultTiming);
+            context.Update(DefaultTiming);
             value.Value += 1;
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
@@ -115,7 +115,7 @@ namespace Coft.Signals.Tests
             value.Value += 1;
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
@@ -128,20 +128,20 @@ namespace Coft.Signals.Tests
         [Test]
         public void Effect_ThrowingAction_RerunsWithOldDependencies()
         {
-            var signals = new SignalContext();
-            var value = signals.Signal(DefaultTiming, 1);
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
             var x = 0;
-            signals.Effect(DefaultTiming, () =>
+            context.Effect(DefaultTiming, () =>
             {
                 x += 1;
                 if (x >= 2) throw new();
                 _ = value.Value;
             });
-            signals.Update(DefaultTiming);
+            context.Update(DefaultTiming);
             value.Value += 1;
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
@@ -151,7 +151,7 @@ namespace Coft.Signals.Tests
             value.Value += 1;
             try
             {
-                signals.Update(DefaultTiming);
+                context.Update(DefaultTiming);
             }
             catch (Exception)
             {
