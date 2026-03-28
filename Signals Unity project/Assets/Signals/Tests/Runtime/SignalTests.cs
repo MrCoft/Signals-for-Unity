@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Coft.Signals.Tests
 {
@@ -68,7 +68,7 @@ namespace Coft.Signals.Tests
 
             signals.Update(0);
             Assert.AreEqual(10, x, "timing 0 effect should have run");
-            Assert.AreEqual(1,  y, "timing 1 effect should not have run yet");
+            Assert.AreEqual(1, y, "timing 1 effect should not have run yet");
 
             signals.Update(1);
             Assert.AreEqual(20, y, "timing 1 effect should now have run");
@@ -116,7 +116,11 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 3, comparer);
             var effectHasRun = false;
-            signals.Effect(DefaultTiming, () => { var _ = value.Value; effectHasRun = true; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = value.Value;
+                effectHasRun = true;
+            });
             signals.Update(DefaultTiming);
             effectHasRun = false;
 
@@ -133,7 +137,11 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 3, comparer);
             var effectHasRun = false;
-            signals.Effect(DefaultTiming, () => { var _ = value.Value; effectHasRun = true; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = value.Value;
+                effectHasRun = true;
+            });
             signals.Update(DefaultTiming);
             effectHasRun = false;
 
@@ -165,9 +173,20 @@ namespace Coft.Signals.Tests
         private class ModuloComparer : IEqualityComparer<int>
         {
             private readonly int _modulo;
-            public ModuloComparer(int modulo) => _modulo = modulo;
-            public bool Equals(int x, int y) => (x % _modulo) == (y % _modulo);
-            public int GetHashCode(int obj) => obj % _modulo;
+            public ModuloComparer(int modulo)
+            {
+                _modulo = modulo;
+            }
+
+            public bool Equals(int x, int y)
+            {
+                return x % _modulo == y % _modulo;
+            }
+
+            public int GetHashCode(int obj)
+            {
+                return obj % _modulo;
+            }
         }
     }
 }

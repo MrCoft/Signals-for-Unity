@@ -6,7 +6,7 @@ namespace Coft.Signals
     {
         int Level { get; }
         bool IsReady { get; set; }
-        bool HasChangedThisPass { get; set; }
+        bool HasChangedThisPass { get; }
         
         void Update();
         HashSet<IUntypedComputed> ComputedSubscribers { get; }

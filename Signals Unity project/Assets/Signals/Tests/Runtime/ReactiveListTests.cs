@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Coft.Signals.Tests
 {
@@ -16,7 +16,11 @@ namespace Coft.Signals.Tests
             signals.Effect(DefaultTiming, () =>
             {
                 snapshot.Clear();
-                foreach (var item in list) snapshot.Add(item);
+
+                foreach (var item in list)
+                {
+                    snapshot.Add(item);
+                }
             });
             signals.Update(DefaultTiming);
 
@@ -25,7 +29,12 @@ namespace Coft.Signals.Tests
             list.Add(3);
             signals.Update(DefaultTiming);
 
-            Assert.AreEqual(new List<int> { 1, 2, 3 }, snapshot);
+            Assert.AreEqual(new List<int>
+            {
+                1,
+                2,
+                3
+            }, snapshot);
         }
 
         [Test]
@@ -34,7 +43,11 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -52,7 +65,11 @@ namespace Coft.Signals.Tests
             list.Add(1);
             list.Add(2);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -70,7 +87,11 @@ namespace Coft.Signals.Tests
             list.Add(10);
             list.Add(20);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -88,7 +109,11 @@ namespace Coft.Signals.Tests
             list.Add(1);
             list.Add(3);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -106,7 +131,11 @@ namespace Coft.Signals.Tests
             var list = signals.List<int>(DefaultTiming);
             list.Add(1);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -124,7 +153,11 @@ namespace Coft.Signals.Tests
             list.Add(1);
             list.Add(2);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -140,7 +173,11 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -156,7 +193,11 @@ namespace Coft.Signals.Tests
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 
@@ -175,7 +216,11 @@ namespace Coft.Signals.Tests
             var list = signals.List<int>(DefaultTiming);
             var other = signals.List<int>(DefaultTiming);
             var runs = 0;
-            signals.Effect(DefaultTiming, () => { var _ = list.Count; runs++; });
+            signals.Effect(DefaultTiming, () =>
+            {
+                var _ = list.Count;
+                runs++;
+            });
             signals.Update(DefaultTiming);
             runs = 0;
 

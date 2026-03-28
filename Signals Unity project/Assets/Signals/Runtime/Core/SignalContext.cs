@@ -40,7 +40,9 @@ namespace Coft.Signals
             var buckets = _dirtyComputeds[timing];
             var level = computed.Level;
             if (level < buckets.Count)
+            {
                 buckets[level].Remove(computed);
+            }
         }
 
         public Signal<T> Signal<T>(int timing, T value, IEqualityComparer<T> comparer = null)
@@ -80,20 +82,30 @@ namespace Coft.Signals
                 FlushComputeds(timing, _errors);
                 FlushEffects(timing, _errors);
 
-                if (TimingToDirtySignalsDict[timing].Count == 0) break;
+                if (TimingToDirtySignalsDict[timing].Count == 0)
+                {
+                    break;
+                }
             }
 
             if (TimingToDirtySignalsDict[timing].Count > 0)
+            {
                 _errors.Add("50 passes without update");
+            }
 
             if (_errors.Count > 0)
+            {
                 throw new(string.Join("\n", _errors));
+            }
         }
 
         private void FlushSignals(int timing)
         {
             foreach (var signal in TimingToDirtySignalsDict[timing])
+            {
                 signal.Update();
+            }
+
             TimingToDirtySignalsDict[timing].Clear();
         }
 
@@ -107,15 +119,25 @@ namespace Coft.Signals
             for (var levelIndex = 0; levelIndex < buckets.Count; levelIndex++)
             {
                 var bucket = buckets[levelIndex];
-                if (bucket.Count == 0) continue;
+                if (bucket.Count == 0)
+                {
+                    continue;
+                }
 
                 _levelBuffer.Clear();
-                foreach (var c in bucket) _levelBuffer.Add(c);
+                foreach (var c in bucket)
+                {
+                    _levelBuffer.Add(c);
+                }
+
                 bucket.Clear();
 
                 foreach (var computed in _levelBuffer)
                 {
-                    if (_committed.Contains(computed)) continue;
+                    if (_committed.Contains(computed))
+                    {
+                        continue;
+                    }
 
                     if (!TryRun(computed, errors))
                     {
@@ -147,7 +169,9 @@ namespace Coft.Signals
             }
 
             foreach (var bucket in buckets)
+            {
                 bucket.Clear();
+            }
         }
 
         private void FlushEffects(int timing, List<string> errors)
@@ -163,8 +187,14 @@ namespace Coft.Signals
                     continue;
                 }
 
-                try { effect.Run(); }
-                catch (Exception e) { errors.Add(e.ToString()); }
+                try
+                {
+                    effect.Run();
+                }
+                catch (Exception e)
+                {
+                    errors.Add(e.ToString());
+                }
             }
 
             TimingToDirtyEffectsDict[timing].Clear();
@@ -174,15 +204,23 @@ namespace Coft.Signals
         private void CommitComputed(IUntypedComputed computed, List<HashSet<IUntypedComputed>> buckets, int timing)
         {
             computed.Update();
-            if (!computed.HasChangedThisPass) return;
+            if (!computed.HasChangedThisPass)
+            {
+                return;
+            }
 
             foreach (var subscriber in computed.ComputedSubscribers)
             {
-                if (_committed.Contains(subscriber)) continue;
+                if (_committed.Contains(subscriber))
+                {
+                    continue;
+                }
+
                 var level = subscriber.Level;
                 EnsureLevel(buckets, level);
                 buckets[level].Add(subscriber);
             }
+
             TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
         }
 
@@ -203,27 +241,46 @@ namespace Coft.Signals
         private static void EnsureLevel(List<HashSet<IUntypedComputed>> buckets, int level)
         {
             while (buckets.Count <= level)
-                buckets.Add(new HashSet<IUntypedComputed>());
+            {
+                buckets.Add(new());
+            }
         }
 
         private static int CountDirty(List<HashSet<IUntypedComputed>> buckets)
         {
             var count = 0;
-            foreach (var bucket in buckets) count += bucket.Count;
+
+            foreach (var bucket in buckets)
+            {
+                count += bucket.Count;
+            }
+
             return count;
         }
 
         private static bool HasUncommittedDep(IUntypedComputed computed)
         {
             foreach (var dep in computed.Dependencies)
-                if (!dep.IsReady) return true;
+            {
+                if (!dep.IsReady)
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
         private static bool HasDirtySignalDep(Effect effect, HashSet<IUntypedSignal> dirtySignals)
         {
             foreach (var dep in effect.Dependencies)
-                if (dirtySignals.Contains(dep)) return true;
+            {
+                if (dirtySignals.Contains(dep))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
     }

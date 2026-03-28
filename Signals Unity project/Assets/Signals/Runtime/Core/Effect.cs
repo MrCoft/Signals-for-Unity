@@ -8,7 +8,7 @@ namespace Coft.Signals
         private SignalContext _context;
 
         public int Timing;
-        
+
         private readonly Action _action;
         public HashSet<IUntypedSignal> Dependencies;
 
@@ -20,10 +20,11 @@ namespace Coft.Signals
             Dependencies = new();
             _context.TimingToDirtyEffectsDict[timing].Add(this);
         }
-        
+
         public void Dispose()
         {
             _context.TimingToDirtyEffectsDict[Timing].Remove(this);
+
             foreach (var signal in Dependencies)
             {
                 signal.EffectSubscribers.Remove(this);
@@ -41,7 +42,7 @@ namespace Coft.Signals
             {
                 signal.EffectSubscribers.Remove(this);
             }
-            
+
             var previousDeps = _context.PreviousDependencies;
             previousDeps.Clear();
             previousDeps.UnionWith(Dependencies);
@@ -55,7 +56,10 @@ namespace Coft.Signals
             {
                 Dependencies.UnionWith(previousDeps);
                 foreach (var signal in previousDeps)
+                {
                     signal.EffectSubscribers.Add(this);
+                }
+
                 throw e;
             }
 

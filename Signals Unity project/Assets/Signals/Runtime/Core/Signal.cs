@@ -9,7 +9,14 @@ namespace Coft.Signals
         public int Timing;
 
         private T _cachedValue;
-        public int Level => 0;
+        public int Level
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
         public bool IsDirty;
         public bool HasChangedThisPass { get; set; }
         public bool IsReady { get; set; }
@@ -41,7 +48,7 @@ namespace Coft.Signals
             }
             set
             {
-                if (_comparer.Equals(value, _newValue) == false)
+                if (!_comparer.Equals(value, _newValue))
                 {
                     _newValue = value;
                     IsDirty = true;
@@ -55,9 +62,14 @@ namespace Coft.Signals
             if (IsDirty)
             {
                 foreach (var computed in ComputedSubscribers)
+                {
                     _context.MarkComputedDirty(computed.Timing, computed);
+                }
+
                 foreach (var effect in EffectSubscribers)
+                {
                     _context.TimingToDirtyEffectsDict[effect.Timing].Add(effect);
+                }
             }
 
             HasChangedThisPass = IsDirty;

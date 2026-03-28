@@ -5,9 +5,9 @@ namespace Coft.Signals
 {
     public class Computed<T> : IUntypedComputed, IDisposable
     {
-        private SignalContext _context;
+        private readonly SignalContext _context;
 
-        public int Timing { get; private set; }
+        public int Timing { get; }
         public int Level { get; private set; }
 
         private readonly Func<T> _getter;
@@ -21,7 +21,6 @@ namespace Coft.Signals
         public bool IsReady { get; set; }
         public HashSet<IUntypedComputed> ComputedSubscribers { get; }
         public HashSet<Effect> EffectSubscribers { get; }
-        public bool HasRun { get; set; }
 
         public Computed(SignalContext context, int timing, Func<T> getter, IEqualityComparer<T> comparer = null)
         {
@@ -36,13 +35,13 @@ namespace Coft.Signals
             EffectSubscribers = new();
             IsReady = false;
             HasChangedThisPass = false;
-            HasRun = false;
             _context.MarkComputedDirty(timing, this);
         }
 
         public void Dispose()
         {
             _context.RemoveDirtyComputed(Timing, this);
+
             foreach (var signal in Dependencies)
             {
                 signal.ComputedSubscribers.Remove(this);
@@ -65,7 +64,7 @@ namespace Coft.Signals
 
         public void Update()
         {
-            HasChangedThisPass = _comparer.Equals(_newValue, _cachedValue) == false;
+            HasChangedThisPass = !_comparer.Equals(_newValue, _cachedValue);
             if (HasChangedThisPass)
             {
                 _cachedValue = _newValue;
@@ -86,6 +85,7 @@ namespace Coft.Signals
             previousDeps.UnionWith(Dependencies);
             Dependencies.Clear();
             _context.DependenciesCollector.Clear();
+
             try
             {
                 _newValue = _getter();
@@ -94,16 +94,26 @@ namespace Coft.Signals
             {
                 Dependencies.UnionWith(previousDeps);
                 foreach (var signal in previousDeps)
+                {
                     signal.ComputedSubscribers.Add(this);
+                }
+
                 throw e;
             }
+
             Dependencies.UnionWith(_context.DependenciesCollector);
+
             foreach (var signal in _context.DependenciesCollector)
+            {
                 signal.ComputedSubscribers.Add(this);
+            }
 
             var maxDepLevel = 0;
             foreach (var dep in _context.DependenciesCollector)
+            {
                 if (dep.Level > maxDepLevel) maxDepLevel = dep.Level;
+            }
+
             Level = maxDepLevel + 1;
         }
     }
