@@ -10,6 +10,7 @@ namespace Coft.Signals
         public int Timing;
 
         private T _cachedValue;
+        public int Level => 0;
         public bool IsDirty;
         public bool HasChangedThisPass { get; set; }
         public bool IsReady { get; set; }
@@ -52,7 +53,8 @@ namespace Coft.Signals
         {
             if (IsDirty)
             {
-                _context.TimingToDirtyComputedsDict[Timing].UnionWith(ComputedSubscribers);
+                foreach (var computed in ComputedSubscribers)
+                    _context.MarkComputedDirty(Timing, computed);
                 _context.TimingToDirtyEffectsDict[Timing].UnionWith(EffectSubscribers);
             }
             

@@ -9,7 +9,11 @@ namespace Coft.Signals
         private T _cachedValue;
         // public bool IsDirty;
         private T _newValue;
-        
+
+        public int Level
+        {
+            get;
+        }
         public bool IsReady { get; set; }
         public bool HasChangedThisPass { get; set; }
         public void Update()
@@ -24,9 +28,9 @@ namespace Coft.Signals
         {
             All,
             Index,
-            Find,
+            Find
         }
-        
+
         public IEnumerator<T> GetEnumerator()
         {
             throw new NotImplementedException();
@@ -81,8 +85,14 @@ namespace Coft.Signals
 
         public T this[int index]
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

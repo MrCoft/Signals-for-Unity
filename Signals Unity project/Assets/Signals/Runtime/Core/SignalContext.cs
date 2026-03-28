@@ -8,14 +8,14 @@ namespace Coft.Signals
         public HashSet<IUntypedSignal> DependenciesCollector = new();
         public HashSet<IUntypedSignal> PreviousDependencies = new();
         public Dictionary<int, HashSet<IUntypedSignal>> TimingToDirtySignalsDict = new();
-        public Dictionary<int, HashSet<IUntypedComputed>> TimingToDirtyComputedsDict = new();
         public Dictionary<int, HashSet<Effect>> TimingToDirtyEffectsDict = new();
 
+        // Per-timing dirty computeds bucketed by level (index = level).
+        private readonly Dictionary<int, List<HashSet<IUntypedComputed>>> _dirtyComputeds = new();
+
         // Pre-allocated working buffers — reused every Update() call, never re-created.
-        private readonly List<IUntypedComputed> _pending = new();
+        private readonly List<IUntypedComputed> _levelBuffer = new();
         private readonly HashSet<IUntypedComputed> _committed = new();
-        private readonly HashSet<IUntypedComputed> _deferredA = new();
-        private readonly HashSet<IUntypedComputed> _deferredB = new();
         private readonly HashSet<Effect> _deferredEffects = new();
 
         private void InitializeTiming(int timing)
@@ -23,9 +23,26 @@ namespace Coft.Signals
             if (!TimingToDirtySignalsDict.ContainsKey(timing))
             {
                 TimingToDirtySignalsDict.Add(timing, new());
-                TimingToDirtyComputedsDict.Add(timing, new());
+                _dirtyComputeds.Add(timing, new());
                 TimingToDirtyEffectsDict.Add(timing, new());
             }
+        }
+
+        public void MarkComputedDirty(int timing, IUntypedComputed computed)
+        {
+            computed.IsReady = false;
+            var buckets = _dirtyComputeds[timing];
+            var level = computed.Level;
+            EnsureLevel(buckets, level);
+            buckets[level].Add(computed);
+        }
+
+        public void RemoveDirtyComputed(int timing, IUntypedComputed computed)
+        {
+            var buckets = _dirtyComputeds[timing];
+            var level = computed.Level;
+            if (level < buckets.Count)
+                buckets[level].Remove(computed);
         }
 
         public Signal<T> Signal<T>(int timing, T value) where T : IEquatable<T>
@@ -78,51 +95,23 @@ namespace Coft.Signals
 
         private void FlushComputeds(int timing, List<string> errors)
         {
-            _pending.Clear();
+            var buckets = _dirtyComputeds[timing];
+            var maxLevel = Math.Max(8, CountDirty(buckets) * 2);
+            var cycleErrorAdded = false;
             _committed.Clear();
 
-            // Run all dirty computeds to discover their current dependencies.
-            // Mark them not-ready so downstream nodes know they haven't committed yet.
-            foreach (var computed in TimingToDirtyComputedsDict[timing])
+            for (var levelIndex = 0; levelIndex < buckets.Count; levelIndex++)
             {
-                if (TryRun(computed, errors))
+                var bucket = buckets[levelIndex];
+                if (bucket.Count == 0) continue;
+
+                _levelBuffer.Clear();
+                foreach (var c in bucket) _levelBuffer.Add(c);
+                bucket.Clear();
+
+                foreach (var computed in _levelBuffer)
                 {
-                    computed.IsReady = false;
-                    _pending.Add(computed);
-                }
-                else
-                {
-                    computed.Update();
-                }
-            }
-
-            // Commit those whose deps are all settled. Defer the rest.
-            var deferred = _deferredA;
-            deferred.Clear();
-            foreach (var computed in _pending)
-            {
-                if (!AllDepsReady(computed) || HasStaleComputedDep(computed))
-                    deferred.Add(computed);
-                else
-                    CommitComputed(computed, deferred, timing);
-            }
-
-            // Resolve deferred in dependency order, breaking cycles if stuck.
-            while (deferred.Count > 0)
-            {
-                var next = ReferenceEquals(deferred, _deferredA) ? _deferredB : _deferredA;
-                next.Clear();
-                var anyRan = false;
-
-                foreach (var computed in deferred)
-                {
-                    if (!AllDepsReady(computed))
-                    {
-                        next.Add(computed);
-                        continue;
-                    }
-
-                    anyRan = true;
+                    if (_committed.Contains(computed)) continue;
 
                     if (!TryRun(computed, errors))
                     {
@@ -130,24 +119,32 @@ namespace Coft.Signals
                         continue;
                     }
 
-                    if (HasUnreadyDep(computed))
+                    var newLevel = computed.Level;
+                    if (newLevel > maxLevel)
                     {
-                        computed.IsReady = false;
-                        next.Add(computed);
+                        if (!cycleErrorAdded)
+                        {
+                            errors.Add("Could not resolve signal graph; possible cycle detected; undefined behavior will follow");
+                            cycleErrorAdded = true;
+                        }
+                        CommitComputed(computed, buckets, timing);
+                        _committed.Add(computed);
+                    }
+                    else if (HasUncommittedDep(computed))
+                    {
+                        EnsureLevel(buckets, newLevel);
+                        buckets[newLevel].Add(computed);
                     }
                     else
                     {
-                        CommitComputed(computed, next, timing);
+                        CommitComputed(computed, buckets, timing);
                     }
                 }
-
-                if (!anyRan)
-                    BreakCycle(deferred, next, timing, errors);
-
-                deferred = next;
             }
 
-            TimingToDirtyComputedsDict[timing].Clear();
+            // Clear any garbage left in buckets (e.g. after cycle resolution).
+            foreach (var bucket in buckets)
+                bucket.Clear();
         }
 
         private void FlushEffects(int timing, List<string> errors)
@@ -171,29 +168,19 @@ namespace Coft.Signals
             TimingToDirtyEffectsDict[timing].UnionWith(_deferredEffects);
         }
 
-        private void CommitComputed(IUntypedComputed computed, HashSet<IUntypedComputed> queue, int timing)
+        private void CommitComputed(IUntypedComputed computed, List<HashSet<IUntypedComputed>> buckets, int timing)
         {
             computed.Update();
-            _committed.Add(computed);
             if (!computed.HasChangedThisPass) return;
 
             foreach (var subscriber in computed.ComputedSubscribers)
             {
-                if (!_committed.Contains(subscriber))
-                    queue.Add(subscriber);
+                if (_committed.Contains(subscriber)) continue;
+                var level = subscriber.Level;
+                EnsureLevel(buckets, level);
+                buckets[level].Add(subscriber);
             }
             TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
-        }
-
-        private void BreakCycle(HashSet<IUntypedComputed> deferred, HashSet<IUntypedComputed> next, int timing, List<string> errors)
-        {
-            errors.Add("Could not resolve signal graph; possible cycle detected; undefined behavior will follow");
-
-            var computed = ComputedWithFewestUnreadyDeps(deferred);
-            if (TryRun(computed, errors))
-                CommitComputed(computed, next, timing);
-            else
-                computed.Update();
         }
 
         private bool TryRun(IUntypedComputed computed, List<string> errors)
@@ -210,25 +197,23 @@ namespace Coft.Signals
             }
         }
 
-        private static bool AllDepsReady(IUntypedComputed computed)
+        private static void EnsureLevel(List<HashSet<IUntypedComputed>> buckets, int level)
         {
-            foreach (var dep in computed.Dependencies)
-                if (!dep.IsReady) return false;
-            return true;
+            while (buckets.Count <= level)
+                buckets.Add(new HashSet<IUntypedComputed>());
         }
 
-        private static bool HasUnreadyDep(IUntypedComputed computed)
+        private static int CountDirty(List<HashSet<IUntypedComputed>> buckets)
+        {
+            var count = 0;
+            foreach (var bucket in buckets) count += bucket.Count;
+            return count;
+        }
+
+        private static bool HasUncommittedDep(IUntypedComputed computed)
         {
             foreach (var dep in computed.Dependencies)
                 if (!dep.IsReady) return true;
-            return false;
-        }
-
-        private static bool HasStaleComputedDep(IUntypedComputed computed)
-        {
-            foreach (var dep in computed.Dependencies)
-                if (dep is IUntypedComputed && dep.HasChangedThisPass)
-                    return true;
             return false;
         }
 
@@ -237,33 +222,6 @@ namespace Coft.Signals
             foreach (var dep in effect.Dependencies)
                 if (dirtySignals.Contains(dep)) return true;
             return false;
-        }
-
-        private static IUntypedComputed ComputedWithFewestUnreadyDeps(HashSet<IUntypedComputed> computeds)
-        {
-            IUntypedComputed best = null;
-            var bestUnready = int.MaxValue;
-            var bestReady = -1;
-
-            foreach (var computed in computeds)
-            {
-                var unready = 0;
-                var ready = 0;
-                foreach (var dep in computed.Dependencies)
-                {
-                    if (dep.IsReady) ready++;
-                    else unready++;
-                }
-
-                if (unready < bestUnready || unready == bestUnready && ready > bestReady)
-                {
-                    best = computed;
-                    bestUnready = unready;
-                    bestReady = ready;
-                }
-            }
-
-            return best;
         }
     }
 }

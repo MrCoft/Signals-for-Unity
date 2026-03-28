@@ -8,6 +8,7 @@ namespace Coft.Signals
         private SignalContext _context;
 
         public int Timing;
+        public int Level { get; private set; }
 
         private readonly Func<T> _getter;
         private T _cachedValue;
@@ -34,12 +35,12 @@ namespace Coft.Signals
             IsReady = false;
             HasChangedThisPass = false;
             HasRun = false;
-            _context.TimingToDirtyComputedsDict[timing].Add(this);
+            _context.MarkComputedDirty(timing, this);
         }
 
         public void Dispose()
         {
-            _context.TimingToDirtyComputedsDict[Timing].Remove(this);
+            _context.RemoveDirtyComputed(Timing, this);
             foreach (var signal in Dependencies)
             {
                 signal.ComputedSubscribers.Remove(this);
@@ -97,6 +98,11 @@ namespace Coft.Signals
             Dependencies.UnionWith(_context.DependenciesCollector);
             foreach (var signal in _context.DependenciesCollector)
                 signal.ComputedSubscribers.Add(this);
+
+            var maxDepLevel = 0;
+            foreach (var dep in _context.DependenciesCollector)
+                if (dep.Level > maxDepLevel) maxDepLevel = dep.Level;
+            Level = maxDepLevel + 1;
         }
     }
 }
