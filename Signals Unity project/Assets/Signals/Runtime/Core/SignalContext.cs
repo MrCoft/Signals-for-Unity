@@ -50,6 +50,8 @@ namespace Coft.Signals
             return new(this, timing);
         }
 
+        private const int MaxPasses = 50;
+
         public void Update(int timing)
         {
             InitializeTiming(timing);
@@ -57,7 +59,7 @@ namespace Coft.Signals
             _errors.Clear();
             var pass = 0;
 
-            while (pass++ < 50)
+            while (pass++ < MaxPasses)
             {
                 FlushSignals(timing);
                 FlushComputeds(timing, _errors);
@@ -71,7 +73,7 @@ namespace Coft.Signals
 
             if (TimingToDirtySignalsDict[timing].Count > 0)
             {
-                _errors.Add("50 passes without update");
+                _errors.Add($"{MaxPasses} passes without update");
             }
 
             if (_errors.Count > 0)
