@@ -101,11 +101,28 @@ namespace Coft.Signals
                     {
                         if (computed.Dependencies.All(dep => dep.IsReady))
                         {
-                            computed.Update();
-                            if (computed.HasChangedThisPass)
+                            var hasStaleComputedDep = false;
+                            foreach (var dep in computed.Dependencies)
                             {
-                                computedsQueue.UnionWith(computed.ComputedSubscribers);
-                                TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
+                                if (dep is IUntypedComputed && dep.HasChangedThisPass)
+                                {
+                                    hasStaleComputedDep = true;
+                                    break;
+                                }
+                            }
+
+                            if (hasStaleComputedDep)
+                            {
+                                computedsQueue.Add(computed);
+                            }
+                            else
+                            {
+                                computed.Update();
+                                if (computed.HasChangedThisPass)
+                                {
+                                    computedsQueue.UnionWith(computed.ComputedSubscribers);
+                                    TimingToDirtyEffectsDict[timing].UnionWith(computed.EffectSubscribers);
+                                }
                             }
                         }
                         else
