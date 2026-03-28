@@ -21,7 +21,9 @@ namespace Coft.Signals.Tests
             var context = new SignalContext();
             var x = 0;
             context.Effect(DefaultTiming, () => x = 1);
+
             context.Update(DefaultTiming);
+
             Assert.AreEqual(1, x);
         }
 
@@ -33,8 +35,10 @@ namespace Coft.Signals.Tests
             var x = 0;
             context.Effect(DefaultTiming, () => x = value.Value);
             context.Update(DefaultTiming);
+
             value.Value = 2;
             context.Update(DefaultTiming);
+
             Assert.AreEqual(2, x);
         }
 
@@ -47,8 +51,10 @@ namespace Coft.Signals.Tests
             context.Effect(DefaultTiming, () => effectHasRun = true);
             context.Update(DefaultTiming);
             effectHasRun = false;
+
             value.Value = 2;
             context.Update(DefaultTiming);
+
             Assert.That(effectHasRun, Is.False);
         }
 
@@ -64,18 +70,14 @@ namespace Coft.Signals.Tests
             context.Update(DefaultTiming);
             Assert.AreEqual(1, x);
 
-            {
-                condition.Value = false;
-                context.Update(DefaultTiming);
-                Assert.AreEqual(2, x);
-            }
+            condition.Value = false;
+            context.Update(DefaultTiming);
+            Assert.AreEqual(2, x);
 
-            {
-                x = 0;
-                value1.Value = 100;
-                context.Update(DefaultTiming);
-                Assert.AreEqual(0, x);
-            }
+            x = 0;
+            value1.Value = 100;
+            context.Update(DefaultTiming);
+            Assert.AreEqual(0, x);
         }
 
         [Test]
@@ -103,7 +105,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             context.Effect(DefaultTiming, () =>
             {
-                var _ = a.Value + b.Value;
+                _ = a.Value + b.Value;
                 runs++;
             });
             context.Update(DefaultTiming);
@@ -123,7 +125,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             context.Effect(DefaultTiming, () =>
             {
-                var _ = a.Value;
+                _ = a.Value;
                 runs++;
             });
             context.Update(DefaultTiming);
@@ -152,8 +154,10 @@ namespace Coft.Signals.Tests
                 writeValue1.Value = 20 + triggerValue.Value;
             });
             context.Update(DefaultTiming);
+
             triggerValue.Value = 1;
             context.Update(DefaultTiming);
+
             Assert.AreEqual(21, writeValue1.Value);
         }
     }

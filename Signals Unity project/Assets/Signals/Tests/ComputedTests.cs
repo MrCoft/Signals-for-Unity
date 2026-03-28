@@ -12,8 +12,10 @@ namespace Coft.Signals.Tests
             var context = new SignalContext();
             var value = context.Signal(DefaultTiming, 1);
             var computed = context.Computed(DefaultTiming, () => value.Value * 2);
+
             context.Update(DefaultTiming);
             Assert.AreEqual(2, computed.Value);
+
             value.Value = 2;
             context.Update(DefaultTiming);
             Assert.AreEqual(4, computed.Value);
@@ -27,7 +29,9 @@ namespace Coft.Signals.Tests
             Computed<int> a = null;
             var b = context.Computed(DefaultTiming, () => a!.Value + 1);
             a = context.Computed(DefaultTiming, () => value.Value * -2);
+
             context.Update(DefaultTiming);
+
             Assert.AreEqual(-9, b.Value);
         }
 
@@ -117,8 +121,10 @@ namespace Coft.Signals.Tests
             });
             context.Update(DefaultTiming);
             x = 0;
+
             value.Value = -3;
             context.Update(DefaultTiming);
+
             Assert.AreEqual(0, x);
         }
 

@@ -23,7 +23,9 @@ namespace Coft.Signals.Tests
                 return value + 1;
             });
             a = context.Computed(DefaultTiming, () => 1);
+
             context.Update(DefaultTiming);
+
             Assert.AreEqual(2, b.Value);
             Assert.AreEqual(0, firstWrite);
         }
@@ -39,7 +41,9 @@ namespace Coft.Signals.Tests
                 x += 1;
                 return value.Value * 2;
             });
+
             context.Update(DefaultTiming);
+
             Assert.AreEqual(1, x);
         }
 
@@ -58,7 +62,9 @@ namespace Coft.Signals.Tests
             });
             resultTrue = context.Computed(DefaultTiming, () => computedCondition!.Value ? 2 : 1);
             computedCondition = context.Computed(DefaultTiming, () => condition.Value);
+
             context.Update(DefaultTiming);
+
             Assert.AreEqual(3, numberOfRuns);
         }
 
@@ -77,9 +83,11 @@ namespace Coft.Signals.Tests
             });
             context.Update(DefaultTiming);
             x = 0;
+
             readValue.Value = 10;
             writeValue.Value = 9;
             context.Update(DefaultTiming);
+
             Assert.AreEqual(1, x);
         }
     }

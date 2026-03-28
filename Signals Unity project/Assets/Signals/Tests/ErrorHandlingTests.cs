@@ -15,10 +15,9 @@ namespace Coft.Signals.Tests
             Computed<int> a = null;
             var b = context.Computed(DefaultTiming, () => a!.Value + 1);
             a = context.Computed(DefaultTiming, () => b.Value + value.Value);
-            var exception = Assert.Throws<Exception>(() =>
-            {
-                context.Update(DefaultTiming);
-            });
+
+            var exception = Assert.Throws<Exception>(() => context.Update(DefaultTiming));
+
             Assert.That(exception.Message, Does.Contain("Could not resolve signal graph; possible cycle detected; undefined behavior will follow"));
         }
 
@@ -30,14 +29,13 @@ namespace Coft.Signals.Tests
             Computed<int> a = null;
             var b = context.Computed(DefaultTiming, () => a!.Value + 1);
             a = context.Computed(DefaultTiming, () => b.Value + value.Value);
+
             try
             {
                 context.Update(DefaultTiming);
             }
-            catch (Exception)
-            {
-                // ignored
-            }
+            catch (Exception) { }
+
             Assert.That(b.Value, Is.GreaterThan(0));
         }
 
@@ -47,10 +45,9 @@ namespace Coft.Signals.Tests
             var context = new SignalContext();
             var value = context.Signal(DefaultTiming, 1);
             context.Effect(DefaultTiming, () => value.Value += 1);
-            var exception = Assert.Throws<Exception>(() =>
-            {
-                context.Update(DefaultTiming);
-            });
+
+            var exception = Assert.Throws<Exception>(() => context.Update(DefaultTiming));
+
             Assert.That(exception.Message, Does.Contain("50 passes without update"));
         }
 
@@ -60,14 +57,13 @@ namespace Coft.Signals.Tests
             var context = new SignalContext();
             context.Computed<int>(DefaultTiming, () => throw new());
             var computed = context.Computed(DefaultTiming, () => 1);
+
             try
             {
                 context.Update(DefaultTiming);
             }
-            catch (Exception)
-            {
-                // ignored
-            }
+            catch (Exception) { }
+
             Assert.AreEqual(1, computed.Value);
         }
 
@@ -78,14 +74,13 @@ namespace Coft.Signals.Tests
             var effectHasRun = false;
             context.Effect(DefaultTiming, () => throw new());
             context.Effect(DefaultTiming, () => effectHasRun = true);
+
             try
             {
                 context.Update(DefaultTiming);
             }
-            catch (Exception)
-            {
-                // ignored
-            }
+            catch (Exception) { }
+
             Assert.That(effectHasRun, Is.True);
         }
 
@@ -98,29 +93,28 @@ namespace Coft.Signals.Tests
             _ = context.Computed(DefaultTiming, () =>
             {
                 x += 1;
-                if (x >= 2) throw new();
+                if (x >= 2)
+                {
+                    throw new();
+                }
+
                 return value.Value * 2;
             });
             context.Update(DefaultTiming);
-            value.Value += 1;
-            try
-            {
-                context.Update(DefaultTiming);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
 
             value.Value += 1;
             try
             {
                 context.Update(DefaultTiming);
             }
-            catch (Exception)
+            catch (Exception) { }
+
+            value.Value += 1;
+            try
             {
-                // ignored
+                context.Update(DefaultTiming);
             }
+            catch (Exception) { }
 
             Assert.AreEqual(3, x);
         }
@@ -134,29 +128,28 @@ namespace Coft.Signals.Tests
             context.Effect(DefaultTiming, () =>
             {
                 x += 1;
-                if (x >= 2) throw new();
+                if (x >= 2)
+                {
+                    throw new();
+                }
+
                 _ = value.Value;
             });
             context.Update(DefaultTiming);
-            value.Value += 1;
-            try
-            {
-                context.Update(DefaultTiming);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
 
             value.Value += 1;
             try
             {
                 context.Update(DefaultTiming);
             }
-            catch (Exception)
+            catch (Exception) { }
+
+            value.Value += 1;
+            try
             {
-                // ignored
+                context.Update(DefaultTiming);
             }
+            catch (Exception) { }
 
             Assert.AreEqual(3, x);
         }

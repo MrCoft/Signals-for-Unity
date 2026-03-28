@@ -13,8 +13,10 @@ namespace Coft.Signals.Tests
             var context = new SignalContext();
             var value = context.Signal(DefaultTiming, 1);
             Assert.AreEqual(1, value.Value);
+
             value.Value = 2;
             Assert.AreEqual(1, value.Value);
+
             context.Update(DefaultTiming);
             Assert.AreEqual(2, value.Value);
         }
@@ -27,9 +29,11 @@ namespace Coft.Signals.Tests
             var x = 0;
             context.Effect(DefaultTiming, () => x = value.Value);
             context.Update(DefaultTiming);
+
             x = 0;
             value.Value = 1;
             context.Update(DefaultTiming);
+
             Assert.AreEqual(0, x);
         }
 
@@ -47,6 +51,7 @@ namespace Coft.Signals.Tests
                 x += 1;
             });
             context.Update(DefaultTiming);
+
             Assert.AreEqual(1, x);
         }
 
@@ -183,10 +188,12 @@ namespace Coft.Signals.Tests
                 effectHasRun = true;
             });
             context.Update(DefaultTiming);
+
             effect.Dispose();
             value.Value = 2;
             effectHasRun = false;
             context.Update(DefaultTiming);
+
             Assert.That(effectHasRun, Is.False);
         }
     }
