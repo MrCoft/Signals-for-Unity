@@ -10,10 +10,7 @@ namespace Coft.Signals
         public Dictionary<int, HashSet<IUntypedSignal>> TimingToDirtySignalsDict = new();
         public Dictionary<int, HashSet<Effect>> TimingToDirtyEffectsDict = new();
 
-        // Per-timing dirty computeds bucketed by level (index = level).
         private readonly Dictionary<int, List<HashSet<IUntypedComputed>>> _dirtyComputeds = new();
-
-        // Pre-allocated working buffers — reused every Update() call, never re-created.
         private readonly List<IUntypedComputed> _levelBuffer = new();
         private readonly HashSet<IUntypedComputed> _committed = new();
         private readonly HashSet<Effect> _deferredEffects = new();
@@ -149,7 +146,6 @@ namespace Coft.Signals
                 }
             }
 
-            // Clear any garbage left in buckets (e.g. after cycle resolution).
             foreach (var bucket in buckets)
                 bucket.Clear();
         }

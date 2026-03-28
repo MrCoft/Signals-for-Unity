@@ -5,9 +5,9 @@ namespace Coft.Signals.Tests
     public class ComputedTests
     {
         private const int DefaultTiming = 0;
-        
+
         [Test]
-        public void Works()
+        public void Computed_SignalChange_UpdatesValue()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -18,9 +18,9 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             Assert.AreEqual(4, computed.Value);
         }
-        
+
         [Test]
-        public void SortsDependencies()
+        public void Computed_OutOfOrderCreation_SortsDependencies()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 5);
@@ -32,7 +32,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void DeepChain_UpdatesPropagateToEnd()
+        public void Computed_DeepChain_PropagatesUpdates()
         {
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
@@ -50,7 +50,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void Dispose_StopsUpdates()
+        public void Computed_Dispose_StopsUpdates()
         {
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
@@ -65,7 +65,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void MultipleSignalDeps_UpdatesWhenEitherChanges()
+        public void Computed_MultipleSignalDeps_UpdatesWhenEitherChanges()
         {
             var signals = new SignalContext();
             var x = signals.Signal(DefaultTiming, 1);
@@ -83,7 +83,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void NoRerunWhenNothingChanged()
+        public void Computed_NoChange_DoesNotRerun()
         {
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
@@ -99,14 +99,14 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void SameValueIsIgnored()
+        public void Computed_SameOutputValue_DoesNotPropagate()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 3);
             var square = signals.Computed(DefaultTiming, () => value.Value * value.Value);
             var x = 0;
-            var effect = signals.Effect(DefaultTiming, () => x = square.Value);
-            var computedSideEffect = signals.Computed(DefaultTiming, () =>
+            signals.Effect(DefaultTiming, () => x = square.Value);
+            signals.Computed(DefaultTiming, () =>
             {
                 x = square.Value;
                 return square.Value;
@@ -117,9 +117,9 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             Assert.AreEqual(0, x);
         }
-        
+
         [Test]
-        public void TransitiveChain_UpdatesPropagateToEnd()
+        public void Computed_TransitiveChain_PropagatesUpdates()
         {
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
@@ -130,12 +130,12 @@ namespace Coft.Signals.Tests
             a.Value = 5;
             signals.Update(DefaultTiming);
 
-            Assert.AreEqual(10, b.Value, "b should equal signal * 2");
-            Assert.AreEqual(11, c.Value, "c should equal b + 1 (transitive update)");
+            Assert.AreEqual(10, b.Value);
+            Assert.AreEqual(11, c.Value);
         }
-        
+
         [Test]
-        public void DiamondDependency_Works()
+        public void Computed_DiamondDependency_ProducesCorrectValue()
         {
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
@@ -146,8 +146,8 @@ namespace Coft.Signals.Tests
             a.Value = 5;
             signals.Update(DefaultTiming);
 
-            Assert.AreEqual(10, b.Value, "b should equal signal * 2");
-            Assert.AreEqual(15, c.Value, "c should equal signal + b (no glitch)");
+            Assert.AreEqual(10, b.Value);
+            Assert.AreEqual(15, c.Value);
         }
     }
 }

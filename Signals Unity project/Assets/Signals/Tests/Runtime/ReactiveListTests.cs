@@ -8,7 +8,7 @@ namespace Coft.Signals.Tests
         private const int DefaultTiming = 0;
 
         [Test]
-        public void Works()
+        public void List_Foreach_IteratesAddedItems()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -29,7 +29,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectRunsOnAdd()
+        public void List_Add_RunsEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -45,7 +45,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectRunsOnRemove()
+        public void List_Remove_RunsEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -63,7 +63,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectRunsOnRemoveAt()
+        public void List_RemoveAt_RunsEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -81,7 +81,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectRunsOnInsert()
+        public void List_Insert_RunsEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -100,7 +100,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectRunsOnIndexSet()
+        public void List_IndexSet_RunsEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -117,7 +117,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectRunsOnClear()
+        public void List_Clear_RunsEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -135,7 +135,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void ClearOnEmptyListDoesntFire()
+        public void List_ClearWhenEmpty_DoesNotRunEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -151,7 +151,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void MultipleChangesInOneFrameFireEffectOnce()
+        public void List_MultipleChanges_RunsEffectOnce()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -169,7 +169,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void EffectDoesntRunWhenUnrelated()
+        public void List_UnrelatedListChange_DoesNotRunEffect()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -186,7 +186,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void ComputedReadsCount()
+        public void List_Add_UpdatesCountComputed()
         {
             var signals = new SignalContext();
             var list = signals.List<string>(DefaultTiming);
@@ -202,7 +202,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void ComputedReadsIndex()
+        public void List_IndexSet_UpdatesIndexComputed()
         {
             var signals = new SignalContext();
             var list = signals.List<string>(DefaultTiming);
@@ -218,7 +218,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void ForeachInEffectTracksChanges()
+        public void List_Foreach_TracksChanges()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
@@ -239,19 +239,19 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void ContainsTracksChanges()
+        public void List_Contains_TracksChanges()
         {
             var signals = new SignalContext();
             var list = signals.List<int>(DefaultTiming);
             var hasThree = false;
             signals.Effect(DefaultTiming, () => hasThree = list.Contains(3));
             signals.Update(DefaultTiming);
-            Assert.AreEqual(false, hasThree);
+            Assert.That(hasThree, Is.False);
 
             list.Add(3);
             signals.Update(DefaultTiming);
 
-            Assert.AreEqual(true, hasThree);
+            Assert.That(hasThree, Is.True);
         }
     }
 }

@@ -7,16 +7,16 @@ namespace Coft.Signals.Tests
         private const int DefaultTiming = 0;
 
         [Test]
-        public void DoesntRunImmediately()
+        public void Effect_OnCreation_DoesNotRun()
         {
             var signals = new SignalContext();
             var x = 0;
             signals.Effect(DefaultTiming, () => x = 1);
             Assert.AreEqual(0, x);
         }
-        
+
         [Test]
-        public void RunsOnUpdate()
+        public void Effect_OnUpdate_Runs()
         {
             var signals = new SignalContext();
             var x = 0;
@@ -26,7 +26,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void RunsOnChange()
+        public void Effect_SignalChange_Runs()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -39,7 +39,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void DoesntRunOnUnrelatedChange()
+        public void Effect_UnrelatedSignalChange_DoesNotRun()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -49,11 +49,11 @@ namespace Coft.Signals.Tests
             effectHasRun = false;
             value.Value = 2;
             signals.Update(DefaultTiming);
-            Assert.AreEqual(false, effectHasRun);
+            Assert.That(effectHasRun, Is.False);
         }
 
         [Test]
-        public void ChangesDependencies()
+        public void Effect_ConditionalRead_ChangesDependencies()
         {
             var signals = new SignalContext();
             var condition = signals.Signal(DefaultTiming, true);
@@ -79,9 +79,8 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void TriggeredViaComputed()
+        public void Effect_ComputedDependency_RunsOnSignalChange()
         {
-            // effect reads computed, not signal directly — change to signal must still reach effect
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
             var b = signals.Computed(DefaultTiming, () => a.Value * 2);
@@ -96,9 +95,8 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void RunsOnlyOnce_WhenSignalAndComputedDepBothChange()
+        public void Effect_SignalAndComputedDepChange_RunsOnce()
         {
-            // effect reads both signal and computed(signal); one change should fire the effect once
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
             var b = signals.Computed(DefaultTiming, () => a.Value * 2);
@@ -114,7 +112,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void NoRerunWhenNothingChanged()
+        public void Effect_NoChange_DoesNotRerun()
         {
             var signals = new SignalContext();
             var a = signals.Signal(DefaultTiming, 1);
@@ -130,7 +128,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void MultipleEffectsOverwrite()
+        public void Effect_MultipleWritesToSameSignal_LastWriteWins()
         {
             var signals = new SignalContext();
             var triggerValue = signals.Signal(DefaultTiming, 0);

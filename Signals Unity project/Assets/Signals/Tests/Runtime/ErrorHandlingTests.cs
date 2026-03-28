@@ -6,9 +6,9 @@ namespace Coft.Signals.Tests
     public class ErrorHandlingTests
     {
         private const int DefaultTiming = 0;
-        
+
         [Test]
-        public void ComputedDetectsCyclicDependencies()
+        public void Computed_CyclicDependency_ThrowsException()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -21,12 +21,10 @@ namespace Coft.Signals.Tests
             });
             Assert.That(exception.Message, Does.Contain("Could not resolve signal graph; possible cycle detected; undefined behavior will follow"));
         }
-        
+
         [Test]
-        public void CyclicDependenciesAreResolvedWithSomeValue()
+        public void Computed_CyclicDependency_ProducesSomeValue()
         {
-            // Exact values after cycle resolution are undefined, but the system must not hang
-            // and both computeds must receive a non-default value (some computation occurred).
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             Computed<int> a = null;
@@ -35,15 +33,16 @@ namespace Coft.Signals.Tests
             try
             {
                 signals.Update(DefaultTiming);
-            } catch (Exception e)
+            }
+            catch (Exception)
             {
                 // ignored
             }
-            Assert.Greater(b.Value, 0);
+            Assert.That(b.Value, Is.GreaterThan(0));
         }
-        
+
         [Test]
-        public void EffectDetectsInfiniteLoop()
+        public void Effect_InfiniteLoop_ThrowsException()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -54,25 +53,26 @@ namespace Coft.Signals.Tests
             });
             Assert.That(exception.Message, Does.Contain("50 passes without update"));
         }
-        
+
         [Test]
-        public void SkipsBrokenComputeds()
+        public void Computed_ThrowingGetter_OtherComputedsContinue()
         {
             var signals = new SignalContext();
-            var computedBroken = signals.Computed<int>(DefaultTiming, () => throw new());
+            signals.Computed<int>(DefaultTiming, () => throw new());
             var computed = signals.Computed(DefaultTiming, () => 1);
             try
             {
                 signals.Update(DefaultTiming);
-            } catch (Exception e)
+            }
+            catch (Exception)
             {
                 // ignored
             }
             Assert.AreEqual(1, computed.Value);
         }
-        
+
         [Test]
-        public void SkipsBrokenEffects()
+        public void Effect_ThrowingAction_OtherEffectsContinue()
         {
             var signals = new SignalContext();
             var effectHasRun = false;
@@ -86,12 +86,11 @@ namespace Coft.Signals.Tests
             {
                 // ignored
             }
-            
-            Assert.AreEqual(true, effectHasRun);
+            Assert.That(effectHasRun, Is.True);
         }
 
         [Test]
-        public void RerunsBrokenComputedWithOldDependencies()
+        public void Computed_ThrowingGetter_RerunsWithOldDependencies()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -99,11 +98,7 @@ namespace Coft.Signals.Tests
             var computed = signals.Computed(DefaultTiming, () =>
             {
                 x += 1;
-                if (x >= 2)
-                {
-                    throw new();
-                }
-
+                if (x >= 2) throw new();
                 return value.Value * 2;
             });
             signals.Update(DefaultTiming);
@@ -116,7 +111,7 @@ namespace Coft.Signals.Tests
             {
                 // ignored
             }
-            
+
             value.Value += 1;
             try
             {
@@ -126,12 +121,12 @@ namespace Coft.Signals.Tests
             {
                 // ignored
             }
-            
+
             Assert.AreEqual(3, x);
         }
-        
+
         [Test]
-        public void RerunsBrokenEffectWithOldDependencies()
+        public void Effect_ThrowingAction_RerunsWithOldDependencies()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -139,11 +134,7 @@ namespace Coft.Signals.Tests
             signals.Effect(DefaultTiming, () =>
             {
                 x += 1;
-                if (x >= 2)
-                {
-                    throw new();
-                }
-
+                if (x >= 2) throw new();
                 var read = value.Value;
             });
             signals.Update(DefaultTiming);
@@ -156,7 +147,7 @@ namespace Coft.Signals.Tests
             {
                 // ignored
             }
-            
+
             value.Value += 1;
             try
             {
@@ -166,7 +157,7 @@ namespace Coft.Signals.Tests
             {
                 // ignored
             }
-            
+
             Assert.AreEqual(3, x);
         }
     }

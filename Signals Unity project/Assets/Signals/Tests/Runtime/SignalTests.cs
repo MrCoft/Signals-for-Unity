@@ -6,9 +6,9 @@ namespace Coft.Signals.Tests
     public class SignalTests
     {
         private const int DefaultTiming = 0;
-        
+
         [Test]
-        public void WriteIsDelayed()
+        public void Signal_Write_IsDelayed()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -20,7 +20,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void SameValueWriteIsIgnored()
+        public void Signal_SameValueWrite_IsIgnored()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -32,9 +32,9 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             Assert.AreEqual(0, x);
         }
-        
+
         [Test]
-        public void EventsDontMultiply()
+        public void Signal_MultipleReads_EventsDontMultiply()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -49,9 +49,9 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             Assert.AreEqual(1, x);
         }
-        
+
         [Test]
-        public void TimingIsolation()
+        public void Signal_DifferentTimings_AreIsolated()
         {
             var signals = new SignalContext();
             var a = signals.Signal(0, 1);
@@ -75,7 +75,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void CustomComparer_EffectDoesntRunWhenComparerSaysEqual()
+        public void Signal_CustomComparerSaysEqual_EffectDoesNotRun()
         {
             var comparer = new ModuloComparer(10);
             var signals = new SignalContext();
@@ -85,14 +85,14 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             effectHasRun = false;
 
-            value.Value = 13; // same mod 10
+            value.Value = 13;
             signals.Update(DefaultTiming);
 
-            Assert.AreEqual(false, effectHasRun);
+            Assert.That(effectHasRun, Is.False);
         }
 
         [Test]
-        public void CustomComparer_EffectRunsWhenComparerSaysDifferent()
+        public void Signal_CustomComparerSaysDifferent_EffectRuns()
         {
             var comparer = new ModuloComparer(10);
             var signals = new SignalContext();
@@ -102,22 +102,14 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             effectHasRun = false;
 
-            value.Value = 14; // different mod 10
+            value.Value = 14;
             signals.Update(DefaultTiming);
 
-            Assert.AreEqual(true, effectHasRun);
-        }
-
-        private class ModuloComparer : IEqualityComparer<int>
-        {
-            private readonly int _modulo;
-            public ModuloComparer(int modulo) => _modulo = modulo;
-            public bool Equals(int x, int y) => (x % _modulo) == (y % _modulo);
-            public int GetHashCode(int obj) => obj % _modulo;
+            Assert.That(effectHasRun, Is.True);
         }
 
         [Test]
-        public void Dispose()
+        public void Effect_Dispose_StopsRunning()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
@@ -132,7 +124,15 @@ namespace Coft.Signals.Tests
             value.Value = 2;
             effectHasRun = false;
             signals.Update(DefaultTiming);
-            Assert.AreEqual(false, effectHasRun);
+            Assert.That(effectHasRun, Is.False);
+        }
+
+        private class ModuloComparer : IEqualityComparer<int>
+        {
+            private readonly int _modulo;
+            public ModuloComparer(int modulo) => _modulo = modulo;
+            public bool Equals(int x, int y) => (x % _modulo) == (y % _modulo);
+            public int GetHashCode(int obj) => obj % _modulo;
         }
     }
 }

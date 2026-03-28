@@ -5,9 +5,9 @@ namespace Coft.Signals.Tests
     public class RunnerTests
     {
         private const int DefaultTiming = 0;
-        
+
         [Test]
-        public void FirstRunUsesWrongValues()
+        public void Runner_ComputedCreatedBeforeDep_FirstRunSeesStaleValue()
         {
             var signals = new SignalContext();
             Computed<int> a = null;
@@ -29,12 +29,12 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void DependOnlyOnSignalsAreRunOnce()
+        public void Runner_SignalOnlyDeps_RunsOnce()
         {
             var signals = new SignalContext();
             var value = signals.Signal(DefaultTiming, 1);
             var x = 0;
-            var computed = signals.Computed(DefaultTiming, () =>
+            signals.Computed(DefaultTiming, () =>
             {
                 x += 1;
                 return value.Value * 2;
@@ -44,7 +44,7 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void DependencyChangeOnFirstPassCausesRerun()
+        public void Runner_DepChangesOnFirstPass_CausesRerun()
         {
             var signals = new SignalContext();
             var condition = signals.Signal(DefaultTiming, true);
@@ -61,9 +61,9 @@ namespace Coft.Signals.Tests
             signals.Update(DefaultTiming);
             Assert.AreEqual(3, numberOfRuns);
         }
-        
+
         [Test]
-        public void WaitsWhenDependencyOverwrittenByAnotherEffect()
+        public void Runner_SignalOverwrittenByEffect_WaitsForConsistentState()
         {
             var signals = new SignalContext();
             var readValue = signals.Signal(DefaultTiming, 0);
