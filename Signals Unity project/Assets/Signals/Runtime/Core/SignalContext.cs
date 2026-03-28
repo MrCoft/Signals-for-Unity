@@ -46,16 +46,16 @@ namespace Coft.Signals
                 buckets[level].Remove(computed);
         }
 
-        public Signal<T> Signal<T>(int timing, T value) where T : IEquatable<T>
+        public Signal<T> Signal<T>(int timing, T value, IEqualityComparer<T> comparer = null)
         {
             InitializeTiming(timing);
-            return new(this, timing, value);
+            return new(this, timing, value, comparer);
         }
 
-        public Computed<T> Computed<T>(int timing, Func<T> getter) where T : IEquatable<T>
+        public Computed<T> Computed<T>(int timing, Func<T> getter, IEqualityComparer<T> comparer = null)
         {
             InitializeTiming(timing);
-            return new(this, timing, getter);
+            return new(this, timing, getter, comparer);
         }
 
         public Effect Effect(int timing, Action action)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace Coft.Signals.Tests
@@ -71,6 +72,48 @@ namespace Coft.Signals.Tests
 
             signals.Update(1);
             Assert.AreEqual(20, y, "timing 1 effect should now have run");
+        }
+
+        [Test]
+        public void CustomComparer_EffectDoesntRunWhenComparerSaysEqual()
+        {
+            var comparer = new ModuloComparer(10);
+            var signals = new SignalContext();
+            var value = signals.Signal(DefaultTiming, 3, comparer);
+            var effectHasRun = false;
+            signals.Effect(DefaultTiming, () => { var _ = value.Value; effectHasRun = true; });
+            signals.Update(DefaultTiming);
+            effectHasRun = false;
+
+            value.Value = 13; // same mod 10
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(false, effectHasRun);
+        }
+
+        [Test]
+        public void CustomComparer_EffectRunsWhenComparerSaysDifferent()
+        {
+            var comparer = new ModuloComparer(10);
+            var signals = new SignalContext();
+            var value = signals.Signal(DefaultTiming, 3, comparer);
+            var effectHasRun = false;
+            signals.Effect(DefaultTiming, () => { var _ = value.Value; effectHasRun = true; });
+            signals.Update(DefaultTiming);
+            effectHasRun = false;
+
+            value.Value = 14; // different mod 10
+            signals.Update(DefaultTiming);
+
+            Assert.AreEqual(true, effectHasRun);
+        }
+
+        private class ModuloComparer : IEqualityComparer<int>
+        {
+            private readonly int _modulo;
+            public ModuloComparer(int modulo) => _modulo = modulo;
+            public bool Equals(int x, int y) => (x % _modulo) == (y % _modulo);
+            public int GetHashCode(int obj) => obj % _modulo;
         }
 
         [Test]

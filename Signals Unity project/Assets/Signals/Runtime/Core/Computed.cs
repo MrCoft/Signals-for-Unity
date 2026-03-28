@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Computed<T> : IUntypedComputed, IDisposable where T : IEquatable<T>
+    public class Computed<T> : IUntypedComputed, IDisposable
     {
         private SignalContext _context;
 
@@ -11,9 +11,10 @@ namespace Coft.Signals
         public int Level { get; private set; }
 
         private readonly Func<T> _getter;
+        private readonly IEqualityComparer<T> _comparer;
         private T _cachedValue;
         private T _newValue;
-        
+
         public bool HasChangedThisPass { get; set; }
 
         public HashSet<IUntypedSignal> Dependencies { get; }
@@ -21,12 +22,13 @@ namespace Coft.Signals
         public HashSet<IUntypedComputed> ComputedSubscribers { get; }
         public HashSet<Effect> EffectSubscribers { get; }
         public bool HasRun { get; set; }
-        
-        public Computed(SignalContext context, int timing, Func<T> getter)
+
+        public Computed(SignalContext context, int timing, Func<T> getter, IEqualityComparer<T> comparer = null)
         {
             _context = context;
             Timing = timing;
             _getter = getter;
+            _comparer = comparer ?? EqualityComparer<T>.Default;
             _cachedValue = default;
             _newValue = default;
             Dependencies = new();
@@ -63,8 +65,8 @@ namespace Coft.Signals
 
         public void Update()
         {
-            HasChangedThisPass = _newValue.Equals(_cachedValue) == false;
-            if (_newValue.Equals(_cachedValue) == false)
+            HasChangedThisPass = _comparer.Equals(_newValue, _cachedValue) == false;
+            if (HasChangedThisPass)
             {
                 _cachedValue = _newValue;
             }

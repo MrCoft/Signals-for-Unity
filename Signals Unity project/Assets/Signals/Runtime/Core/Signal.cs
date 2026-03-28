@@ -1,9 +1,8 @@
-﻿using System;
 using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Signal<T> : IUntypedSignal where T : IEquatable<T>
+    public class Signal<T> : IUntypedSignal
     {
         private SignalContext _context;
 
@@ -15,14 +14,16 @@ namespace Coft.Signals
         public bool HasChangedThisPass { get; set; }
         public bool IsReady { get; set; }
         private T _newValue;
+        private readonly IEqualityComparer<T> _comparer;
         public HashSet<IUntypedComputed> ComputedSubscribers { get; }
         public HashSet<Effect> EffectSubscribers { get; }
 
-        public Signal(SignalContext context, int timing, T value)
+        public Signal(SignalContext context, int timing, T value, IEqualityComparer<T> comparer = null)
         {
             _context = context;
             Timing = timing;
-            
+            _comparer = comparer ?? EqualityComparer<T>.Default;
+
             _cachedValue = value;
             _newValue = value;
             IsDirty = false;
@@ -40,7 +41,7 @@ namespace Coft.Signals
             }
             set
             {
-                if (value.Equals(_newValue) == false)
+                if (_comparer.Equals(value, _newValue) == false)
                 {
                     _newValue = value;
                     IsDirty = true;
@@ -57,7 +58,7 @@ namespace Coft.Signals
                     _context.MarkComputedDirty(Timing, computed);
                 _context.TimingToDirtyEffectsDict[Timing].UnionWith(EffectSubscribers);
             }
-            
+
             HasChangedThisPass = IsDirty;
             _cachedValue = _newValue;
             IsDirty = false;
