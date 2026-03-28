@@ -7,7 +7,7 @@ namespace Coft.Signals
     {
         private SignalContext _context;
 
-        public int Timing;
+        public int Timing { get; private set; }
         public int Level { get; private set; }
 
         private readonly Func<T> _getter;
