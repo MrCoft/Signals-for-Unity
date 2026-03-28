@@ -42,7 +42,9 @@ namespace Coft.Signals
                 signal.EffectSubscribers.Remove(this);
             }
             
-            var dependenciesCopy = new HashSet<IUntypedSignal>(Dependencies);
+            var previousDeps = _context.PreviousDependencies;
+            previousDeps.Clear();
+            previousDeps.UnionWith(Dependencies);
             Dependencies.Clear();
             _context.DependenciesCollector.Clear();
             try
@@ -51,14 +53,12 @@ namespace Coft.Signals
             }
             catch (Exception e)
             {
-                Dependencies.UnionWith(dependenciesCopy);
-                foreach (var signal in dependenciesCopy)
-                {
+                Dependencies.UnionWith(previousDeps);
+                foreach (var signal in previousDeps)
                     signal.EffectSubscribers.Add(this);
-                }
                 throw e;
             }
-            
+
             foreach (var signal in _context.DependenciesCollector)
             {
                 Dependencies.Add(signal);
