@@ -159,5 +159,40 @@ namespace Coft.Signals.Tests
             Assert.AreEqual(10, b.Value);
             Assert.AreEqual(15, c.Value);
         }
+
+        [Test]
+        public void Computed_Peek_ReturnsCurrentValue()
+        {
+            var context = new SignalContext();
+            var a = context.Signal(DefaultTiming, 1);
+            var b = context.Computed(DefaultTiming, () => a.Value * 2);
+            context.Update(DefaultTiming);
+
+            a.Value = 5;
+            context.Update(DefaultTiming);
+
+            Assert.AreEqual(10, b.Peek());
+        }
+
+        [Test]
+        public void Computed_Peek_DoesNotRegisterDependency()
+        {
+            var context = new SignalContext();
+            var a = context.Signal(DefaultTiming, 1);
+            var b = context.Computed(DefaultTiming, () => a.Value * 2);
+            var effectHasRun = false;
+            context.Effect(DefaultTiming, () =>
+            {
+                _ = b.Peek();
+                effectHasRun = true;
+            });
+            context.Update(DefaultTiming);
+            effectHasRun = false;
+
+            a.Value = 5;
+            context.Update(DefaultTiming);
+
+            Assert.That(effectHasRun, Is.False);
+        }
     }
 }

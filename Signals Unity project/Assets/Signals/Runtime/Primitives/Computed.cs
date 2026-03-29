@@ -46,6 +46,8 @@ namespace Coft.Signals
             Dispose();
         }
 
+        public T Peek() => _cachedValue;
+
         public T Value
         {
             get

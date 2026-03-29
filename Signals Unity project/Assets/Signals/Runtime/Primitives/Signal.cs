@@ -34,6 +34,8 @@ namespace Coft.Signals
             _newValue = value;
         }
 
+        public T Peek() => _cachedValue;
+
         public T Value
         {
             get
