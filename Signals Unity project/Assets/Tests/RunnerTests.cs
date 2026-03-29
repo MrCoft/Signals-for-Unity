@@ -72,8 +72,8 @@ namespace Coft.Signals.Tests
         public void Runner_SignalOverwrittenByEffect_WaitsForConsistentState()
         {
             var context = new SignalContext();
-            var readValue = context.Signal(DefaultTiming, 0);
-            var writeValue = context.Signal(DefaultTiming, 0);
+            var readValue = context.Signal<int>(DefaultTiming);
+            var writeValue = context.Signal<int>(DefaultTiming);
             var x = 0;
             context.Effect(DefaultTiming, () => writeValue.Value = readValue.Value);
             context.Effect(DefaultTiming, () =>

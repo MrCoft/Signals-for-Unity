@@ -26,7 +26,7 @@ namespace Coft.Signals
             }
         }
 
-        public Signal<T> Signal<T>(int timing, T value, IEqualityComparer<T> comparer = null)
+        public Signal<T> Signal<T>(int timing, T value = default, IEqualityComparer<T> comparer = null)
         {
             InitializeTiming(timing);
             return new(this, timing, value, comparer);

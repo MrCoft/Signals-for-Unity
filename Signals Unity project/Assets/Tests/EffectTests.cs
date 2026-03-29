@@ -141,9 +141,9 @@ namespace Coft.Signals.Tests
         public void Effect_MultipleWritesToSameSignal_LastWriteWins()
         {
             var context = new SignalContext();
-            var triggerValue = context.Signal(DefaultTiming, 0);
-            var writeValue1 = context.Signal(DefaultTiming, 0);
-            var writeValue2 = context.Signal(DefaultTiming, 0);
+            var triggerValue = context.Signal<int>(DefaultTiming);
+            var writeValue1 = context.Signal<int>(DefaultTiming);
+            var writeValue2 = context.Signal<int>(DefaultTiming);
             context.Effect(DefaultTiming, () =>
             {
                 writeValue1.Value = 10 + triggerValue.Value;

@@ -25,7 +25,7 @@ namespace Coft.Signals
         public HashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
         public HashSet<Effect> EffectSubscribers { get; } = new();
 
-        public Signal(SignalContext context, int timing, T value, IEqualityComparer<T> comparer = null)
+        public Signal(SignalContext context, int timing, T value = default, IEqualityComparer<T> comparer = null)
         {
             _context = context;
             _comparer = comparer ?? EqualityComparer<T>.Default;
