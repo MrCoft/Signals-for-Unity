@@ -149,5 +149,27 @@ namespace Coft.Signals.Tests
             context.Update(3);
             Assert.AreEqual(20, x, "effect should have run at timing 3");
         }
+
+        [Test]
+        public void Signal_ReadOutsideEffect_DoesNotRegisterSpuriousDependency()
+        {
+            var context = new SignalContext();
+            var a = context.Signal(DefaultTiming, 1);
+            var b = context.Signal(DefaultTiming, 1);
+            _ = a.Value;
+            var effectHasRun = false;
+            context.Effect(DefaultTiming, () =>
+            {
+                _ = b.Value;
+                effectHasRun = true;
+            });
+            context.Update(DefaultTiming);
+            effectHasRun = false;
+
+            a.Value = 2;
+            context.Update(DefaultTiming);
+
+            Assert.That(effectHasRun, Is.False);
+        }
     }
 }
