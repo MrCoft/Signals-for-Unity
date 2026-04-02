@@ -47,11 +47,20 @@ namespace Coft.Signals
             }
             set
             {
-                if (!_comparer.Equals(value, _pendingValue))
+                _pendingValue = value;
+
+                if (!_comparer.Equals(_pendingValue, _committedValue))
                 {
-                    _pendingValue = value;
-                    _isDirty = true;
-                    _context.TimingToDirtySignalsDict[Timing].Add(this);
+                    if (!_isDirty)
+                    {
+                        _isDirty = true;
+                        _context.TimingToDirtySignalsDict[Timing].Add(this);
+                    }
+                }
+                else if (_isDirty)
+                {
+                    _isDirty = false;
+                    _context.TimingToDirtySignalsDict[Timing].Remove(this);
                 }
             }
         }
