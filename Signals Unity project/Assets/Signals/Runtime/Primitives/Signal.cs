@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Signal<T> : IUntypedSignal
+    public class Signal<T> : IUntypedSignal, ISignal<T>
     {
         private readonly SignalContext _context;
         private readonly IEqualityComparer<T> _comparer;

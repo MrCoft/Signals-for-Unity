@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Computed<T> : IUntypedComputed, IDisposable
+    public class Computed<T> : IUntypedComputed, ISignal<T>, IDisposable
     {
         private readonly SignalContext _context;
         private readonly Func<T> _getter;
