@@ -31,9 +31,15 @@ namespace Coft.Signals
             Timing = timing;
         }
 
-        public IReadOnlyList<T> Peek() => _committedValue;
+        public List<T> Peek()
+        {
+            return _committedValue;
+        }
 
-        public IReadOnlyList<T> PeekLatest() => _pendingValue;
+        public List<T> PeekLatest()
+        {
+            return _pendingValue;
+        }
 
         private void Track()
         {
