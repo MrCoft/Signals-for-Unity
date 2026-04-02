@@ -11,8 +11,8 @@ namespace Coft.Signals
 
         public int Timing { get; }
 
-        private T _cachedValue;
-        private T _newValue;
+        private T _committedValue;
+        private T _pendingValue;
 
         public int Level { get; private set; }
         public bool IsReady { get; set; }
@@ -46,24 +46,24 @@ namespace Coft.Signals
             Dispose();
         }
 
-        public T Peek() => _cachedValue;
+        public T Peek() => _committedValue;
 
         public T Value
         {
             get
             {
                 _context.DependenciesCollector.Add(this);
-                return _cachedValue;
+                return _committedValue;
             }
         }
 
         public void Update()
         {
-            HasChangedThisPass = !_comparer.Equals(_newValue, _cachedValue);
+            HasChangedThisPass = !_comparer.Equals(_pendingValue, _committedValue);
 
             if (HasChangedThisPass)
             {
-                _cachedValue = _newValue;
+                _committedValue = _pendingValue;
             }
 
             IsReady = true;
@@ -84,7 +84,7 @@ namespace Coft.Signals
 
             try
             {
-                _newValue = _getter();
+                _pendingValue = _getter();
             }
             catch (Exception e)
             {

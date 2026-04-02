@@ -9,8 +9,8 @@ namespace Coft.Signals
 
         public int Timing;
 
-        private T _cachedValue;
-        private T _newValue;
+        private T _committedValue;
+        private T _pendingValue;
         private bool _isDirty;
 
         public int Level
@@ -30,26 +30,26 @@ namespace Coft.Signals
             _context = context;
             _comparer = comparer ?? EqualityComparer<T>.Default;
             Timing = timing;
-            _cachedValue = value;
-            _newValue = value;
+            _committedValue = value;
+            _pendingValue = value;
         }
 
-        public T Peek() => _cachedValue;
+        public T Peek() => _committedValue;
 
-        public T PeekLatest() => _newValue;
+        public T PeekLatest() => _pendingValue;
 
         public T Value
         {
             get
             {
                 _context.DependenciesCollector.Add(this);
-                return _cachedValue;
+                return _committedValue;
             }
             set
             {
-                if (!_comparer.Equals(value, _newValue))
+                if (!_comparer.Equals(value, _pendingValue))
                 {
-                    _newValue = value;
+                    _pendingValue = value;
                     _isDirty = true;
                     _context.TimingToDirtySignalsDict[Timing].Add(this);
                 }
@@ -72,7 +72,7 @@ namespace Coft.Signals
             }
 
             HasChangedThisPass = _isDirty;
-            _cachedValue = _newValue;
+            _committedValue = _pendingValue;
             _isDirty = false;
         }
     }

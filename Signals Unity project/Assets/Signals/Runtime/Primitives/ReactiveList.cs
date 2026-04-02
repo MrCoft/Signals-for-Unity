@@ -9,7 +9,8 @@ namespace Coft.Signals
 
         public int Timing;
 
-        private readonly List<T> _items = new();
+        private readonly List<T> _committedValue = new();
+        private readonly List<T> _pendingValue = new();
         private bool _isDirty;
 
         public int Level
@@ -49,22 +50,31 @@ namespace Coft.Signals
             if (_isDirty)
             {
                 foreach (var computed in ComputedSubscribers)
+                {
                     _context.MarkComputedDirty(computed.Timing, computed);
+                }
+
                 foreach (var effect in EffectSubscribers)
+                {
                     _context.TimingToDirtyEffectsDict[effect.Timing].Add(effect);
+                }
+
+                _committedValue.Clear();
+                _committedValue.AddRange(_pendingValue);
             }
+
             HasChangedThisPass = _isDirty;
             _isDirty = false;
         }
 
-        // NOTE: IList<T> Read operations — register dependency
+        // NOTE: IList<T> Read operations — register dependency, read from committed
 
         public int Count
         {
             get
             {
                 Track();
-                return _items.Count;
+                return _committedValue.Count;
             }
         }
 
@@ -81,11 +91,11 @@ namespace Coft.Signals
             get
             {
                 Track();
-                return _items[index];
+                return _committedValue[index];
             }
             set
             {
-                _items[index] = value;
+                _pendingValue[index] = value;
                 MarkDirty();
             }
         }
@@ -94,7 +104,7 @@ namespace Coft.Signals
         public List<T>.Enumerator GetEnumerator()
         {
             Track();
-            return _items.GetEnumerator();
+            return _committedValue.GetEnumerator();
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -110,54 +120,57 @@ namespace Coft.Signals
         public bool Contains(T item)
         {
             Track();
-            return _items.Contains(item);
+            return _committedValue.Contains(item);
         }
 
         public int IndexOf(T item)
         {
             Track();
-            return _items.IndexOf(item);
+            return _committedValue.IndexOf(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
             Track();
-            _items.CopyTo(array, arrayIndex);
+            _committedValue.CopyTo(array, arrayIndex);
         }
 
-        // NOTE: IList<T> Write operations — mark dirty
+        // NOTE: IList<T> Write operations — mutate pending, mark dirty
 
         public void Add(T item)
         {
-            _items.Add(item);
+            _pendingValue.Add(item);
             MarkDirty();
         }
 
         public void Insert(int index, T item)
         {
-            _items.Insert(index, item);
+            _pendingValue.Insert(index, item);
             MarkDirty();
         }
 
         public bool Remove(T item)
         {
+            var removed = _pendingValue.Remove(item);
+            if (removed)
+            {
+                MarkDirty();
+            }
 
-            var removed = _items.Remove(item);
-            if (removed) MarkDirty();
             return removed;
         }
 
         public void RemoveAt(int index)
         {
-            _items.RemoveAt(index);
+            _pendingValue.RemoveAt(index);
             MarkDirty();
         }
 
         public void Clear()
         {
-            if (_items.Count > 0)
+            if (_pendingValue.Count > 0)
             {
-                _items.Clear();
+                _pendingValue.Clear();
                 MarkDirty();
             }
         }
