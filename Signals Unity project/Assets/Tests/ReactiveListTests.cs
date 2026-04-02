@@ -8,6 +8,20 @@ namespace Coft.Signals.Tests
         private const int DefaultTiming = 0;
 
         [Test]
+        public void List_Write_IsDelayed()
+        {
+            var context = new SignalContext();
+            var list = context.List<int>(DefaultTiming);
+            context.Update(DefaultTiming);
+
+            list.Add(1);
+            Assert.AreEqual(0, list.Count);
+
+            context.Update(DefaultTiming);
+            Assert.AreEqual(1, list.Count);
+        }
+
+        [Test]
         public void List_Foreach_IteratesAddedItems()
         {
             var context = new SignalContext();
