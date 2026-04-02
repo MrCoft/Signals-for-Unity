@@ -38,6 +38,27 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
+        public void Signal_WriteAndRevert_IsIgnored()
+        {
+            var context = new SignalContext();
+            var value = context.Signal(DefaultTiming, 1);
+            var effectHasRun = false;
+            context.Effect(DefaultTiming, () =>
+            {
+                _ = value.Value;
+                effectHasRun = true;
+            });
+            context.Update(DefaultTiming);
+            effectHasRun = false;
+
+            value.Value = 2;
+            value.Value = 1;
+            context.Update(DefaultTiming);
+
+            Assert.That(effectHasRun, Is.False);
+        }
+
+        [Test]
         public void Signal_MultipleReads_EventsDontMultiply()
         {
             var context = new SignalContext();
