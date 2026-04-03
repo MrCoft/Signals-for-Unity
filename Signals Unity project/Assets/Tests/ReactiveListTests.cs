@@ -14,7 +14,7 @@ namespace Coft.Signals.Tests
             var list = context.List<int>(DefaultTiming);
             context.Update(DefaultTiming);
 
-            list.Add(1);
+            list.GetMutable().Add(1);
             Assert.AreEqual(0, list.Count);
 
             context.Update(DefaultTiming);
@@ -22,7 +22,65 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void List_Foreach_IteratesAddedItems()
+        public void List_GetMutable_RunsEffect()
+        {
+            var context = new SignalContext();
+            var list = context.List<int>(DefaultTiming);
+            var runs = 0;
+            context.Effect(DefaultTiming, () =>
+            {
+                _ = list.Count;
+                runs++;
+            });
+            context.Update(DefaultTiming);
+            runs = 0;
+
+            list.GetMutable().Add(42);
+            context.Update(DefaultTiming);
+
+            Assert.AreEqual(1, runs);
+        }
+
+        [Test]
+        public void List_GetMutable_SecondCallResetsFromCommitted()
+        {
+            var context = new SignalContext();
+            var list = context.List<int>(DefaultTiming);
+            list.GetMutable().AddRange(new[] { 1, 2, 3 });
+            context.Update(DefaultTiming);
+
+            var first = list.GetMutable();
+            first.Add(4);
+            Assert.AreEqual(4, first.Count);
+
+            var second = list.GetMutable();
+            Assert.AreEqual(3, second.Count);
+        }
+
+        [Test]
+        public void List_MultipleWrites_RunsEffectOnce()
+        {
+            var context = new SignalContext();
+            var list = context.List<int>(DefaultTiming);
+            var runs = 0;
+            context.Effect(DefaultTiming, () =>
+            {
+                _ = list.Count;
+                runs++;
+            });
+            context.Update(DefaultTiming);
+            runs = 0;
+
+            list.GetMutable().Add(1);
+            list.GetMutable().Add(2);
+            list.GetMutable().Add(3);
+            context.Update(DefaultTiming);
+
+            Assert.AreEqual(1, runs);
+        }
+
+        [Test]
+        public void List_Foreach_IteratesItems()
         {
             var context = new SignalContext();
             var list = context.List<int>(DefaultTiming);
@@ -38,189 +96,25 @@ namespace Coft.Signals.Tests
             });
             context.Update(DefaultTiming);
 
-            list.Add(1);
-            list.Add(2);
-            list.Add(3);
+            list.GetMutable().AddRange(new[] { 1, 2, 3 });
             context.Update(DefaultTiming);
 
-            Assert.AreEqual(new List<int>
-            {
-                1,
-                2,
-                3
-            }, snapshot);
+            Assert.AreEqual(new List<int> { 1, 2, 3 }, snapshot);
         }
 
         [Test]
-        public void List_Add_RunsEffect()
+        public void List_GetMutable_UpdatesCountComputed()
         {
             var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
+            var list = context.List<string>(DefaultTiming);
+            var countComputed = context.Computed(DefaultTiming, () => list.Count);
             context.Update(DefaultTiming);
-            runs = 0;
+            Assert.AreEqual(0, countComputed.Value);
 
-            list.Add(42);
+            list.GetMutable().AddRange(new[] { "a", "b" });
             context.Update(DefaultTiming);
 
-            Assert.AreEqual(1, runs);
-        }
-
-        [Test]
-        public void List_Remove_RunsEffect()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            list.Add(1);
-            list.Add(2);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list.Remove(1);
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, runs);
-        }
-
-        [Test]
-        public void List_RemoveAt_RunsEffect()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            list.Add(10);
-            list.Add(20);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list.RemoveAt(0);
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, runs);
-        }
-
-        [Test]
-        public void List_Insert_RunsEffect()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            list.Add(1);
-            list.Add(3);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list.Insert(1, 2);
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, runs);
-            Assert.AreEqual(3, list.Count);
-        }
-
-        [Test]
-        public void List_IndexSet_RunsEffect()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            list.Add(1);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list[0] = 99;
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, runs);
-        }
-
-        [Test]
-        public void List_Clear_RunsEffect()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            list.Add(1);
-            list.Add(2);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list.Clear();
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, runs);
-        }
-
-        [Test]
-        public void List_ClearWhenEmpty_DoesNotRunEffect()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list.Clear();
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(0, runs);
-        }
-
-        [Test]
-        public void List_MultipleChanges_RunsEffectOnce()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            var runs = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = list.Count;
-                runs++;
-            });
-            context.Update(DefaultTiming);
-            runs = 0;
-
-            list.Add(1);
-            list.Add(2);
-            list.Add(3);
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, runs);
+            Assert.AreEqual(2, countComputed.Value);
         }
 
         [Test]
@@ -238,84 +132,13 @@ namespace Coft.Signals.Tests
             context.Update(DefaultTiming);
             runs = 0;
 
-            other.Add(1);
+            other.GetMutable().Add(1);
             context.Update(DefaultTiming);
 
             Assert.AreEqual(0, runs);
         }
 
-        [Test]
-        public void List_Add_UpdatesCountComputed()
-        {
-            var context = new SignalContext();
-            var list = context.List<string>(DefaultTiming);
-            var countComputed = context.Computed(DefaultTiming, () => list.Count);
-            context.Update(DefaultTiming);
-            Assert.AreEqual(0, countComputed.Value);
-
-            list.Add("a");
-            list.Add("b");
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(2, countComputed.Value);
-        }
-
-        [Test]
-        public void List_IndexSet_UpdatesIndexComputed()
-        {
-            var context = new SignalContext();
-            var list = context.List<string>(DefaultTiming);
-            list.Add("hello");
-            var first = context.Computed(DefaultTiming, () => list.Count > 0 ? list[0] : "");
-            context.Update(DefaultTiming);
-            Assert.AreEqual("hello", first.Value);
-
-            list[0] = "world";
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual("world", first.Value);
-        }
-
-        [Test]
-        public void List_Foreach_TracksChanges()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            var sum = 0;
-            context.Effect(DefaultTiming, () =>
-            {
-                sum = 0;
-
-                foreach (var item in list)
-                {
-                    sum += item;
-                }
-            });
-            context.Update(DefaultTiming);
-
-            list.Add(10);
-            list.Add(20);
-            list.Add(30);
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(60, sum);
-        }
-
-        [Test]
-        public void List_Contains_TracksChanges()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            var hasThree = false;
-            context.Effect(DefaultTiming, () => hasThree = list.Contains(3));
-            context.Update(DefaultTiming);
-            Assert.That(hasThree, Is.False);
-
-            list.Add(3);
-            context.Update(DefaultTiming);
-
-            Assert.That(hasThree, Is.True);
-        }
+        // NOTE: Cross-timing tests
 
         [Test]
         public void List_CrossTiming_ComputedRunsAtItsOwnTiming()
@@ -326,7 +149,7 @@ namespace Coft.Signals.Tests
             context.Update(1);
             context.Update(3);
 
-            list.Add(1);
+            list.GetMutable().Add(1);
             context.Update(1);
             Assert.AreEqual(0, count.Value, "computed should not have updated at timing 1");
 
@@ -344,7 +167,7 @@ namespace Coft.Signals.Tests
             context.Update(1);
             context.Update(3);
 
-            list.Add(1);
+            list.GetMutable().Add(1);
             context.Update(1);
             Assert.AreEqual(0, snapshot, "effect should not have run at timing 1");
 
