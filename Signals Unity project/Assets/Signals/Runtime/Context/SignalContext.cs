@@ -44,7 +44,7 @@ namespace Coft.Signals
             return new(this, timing, action);
         }
 
-        public ReactiveList<T> List<T>(int timing)
+        public SignalList<T> List<T>(int timing)
         {
             InitializeTiming(timing);
             return new(this, timing);

@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - `Signal<T>` — observable value with deferred writes
 - `Computed<T>` — derived value that updates automatically when dependencies change
 - `Effect` — side effect that re-runs automatically when dependencies change
-- `ReactiveList<T>` — observable list that triggers dependents on mutation
+- `SignalList<T>` — observable list that triggers dependents on mutation
 - `SignalContext` — owns and manages the reactive graph; call `Update(timing)` to flush changes
 - Timing system — signals, computeds, and effects each declare a timing bucket; `Update(timing)` only flushes that bucket, allowing separate update loops (e.g. Update, FixedUpdate, LateUpdate)
 - Cross-timing dependencies — a computed or effect at timing 3 can read a signal at timing 1 and will update at its own timing, not the signal's

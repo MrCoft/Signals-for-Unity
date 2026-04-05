@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class ReactiveList<T> : IUntypedSignal, IReadOnlyList<T>
+    public class SignalList<T> : IUntypedSignal, IReadOnlyList<T>
     {
         private readonly SignalContext _context;
 
@@ -25,7 +25,7 @@ namespace Coft.Signals
         public HashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
         public HashSet<Effect> EffectSubscribers { get; } = new();
 
-        public ReactiveList(SignalContext context, int timing)
+        public SignalList(SignalContext context, int timing)
         {
             _context = context;
             Timing = timing;

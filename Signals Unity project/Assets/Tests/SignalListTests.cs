@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals.Tests
 {
-    public class ReactiveListTests
+    public class SignalListTests
     {
         private const int DefaultTiming = 0;
 

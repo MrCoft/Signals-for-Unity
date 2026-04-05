@@ -52,7 +52,7 @@ context.Effect(0, () => Debug.Log($"Health changed: {health.Value}"));
 context.Update(0);  // runs the effect once immediately
 ```
 
-### ReactiveList
+### SignalList
 
 An observable list. Mutations (Add, Remove, Clear, etc.) notify dependents.
 
