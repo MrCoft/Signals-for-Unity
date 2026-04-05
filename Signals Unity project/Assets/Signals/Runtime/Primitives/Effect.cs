@@ -31,11 +31,6 @@ namespace Coft.Signals
             }
         }
 
-        ~Effect()
-        {
-            Dispose();
-        }
-
         public void Run()
         {
             foreach (var signal in Dependencies)

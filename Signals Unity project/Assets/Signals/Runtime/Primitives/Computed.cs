@@ -41,11 +41,6 @@ namespace Coft.Signals
             }
         }
 
-        ~Computed()
-        {
-            Dispose();
-        }
-
         public T Peek() => _committedValue;
 
         public T Value

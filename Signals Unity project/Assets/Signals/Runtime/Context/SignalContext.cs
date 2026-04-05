@@ -279,11 +279,10 @@ namespace Coft.Signals
         public void RemoveDirtyComputed(int timing, IUntypedComputed computed)
         {
             var buckets = _dirtyComputeds[timing];
-            var level = computed.Level;
 
-            if (level < buckets.Count)
+            foreach (var bucket in buckets)
             {
-                buckets[level].Remove(computed);
+                bucket.Remove(computed);
             }
         }
     }
