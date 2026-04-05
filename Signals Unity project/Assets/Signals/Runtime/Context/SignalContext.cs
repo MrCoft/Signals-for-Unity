@@ -50,9 +50,9 @@ namespace Coft.Signals
             return new(this, timing);
         }
 
-        public SignalList<TOut> ComputedList<TIn, TOut>(int timing, Func<IReadOnlyList<TIn>> sourceGetter, Func<TIn, TOut> map)
+        public ComputedList<TIn, TOut> ComputedList<TIn, TOut>(int timing, Func<IReadOnlyList<TIn>> sourceGetter, Func<TIn, TOut> map)
         {
-            return Signals.ComputedList.Create(this, timing, sourceGetter, map);
+            return new(this, timing, sourceGetter, map);
         }
 
         private const int MaxPasses = 50;
