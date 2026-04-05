@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class SignalList<T> : IUntypedSignal, IReadOnlyList<T>, IDisposable
+    public class SignalList<T> : IUntypedSignal, ISignalList<T>, IDisposable
     {
         private readonly SignalContext _context;
 

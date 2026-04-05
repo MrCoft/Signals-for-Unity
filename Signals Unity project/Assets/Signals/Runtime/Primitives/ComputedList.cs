@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class ComputedList<TIn, TOut> : IReadOnlyList<TOut>, IDisposable
+    public class ComputedList<TIn, TOut> : ISignalList<TOut>, IDisposable
     {
         private readonly SignalList<TOut> _list;
         private readonly Effect _effect;
