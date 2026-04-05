@@ -1,9 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class SignalList<T> : IUntypedSignal, IReadOnlyList<T>
+    public class SignalList<T> : IUntypedSignal, IReadOnlyList<T>, IDisposable
     {
         private readonly SignalContext _context;
 
@@ -113,6 +114,11 @@ namespace Coft.Signals
 
             HasChangedThisPass = _isDirty;
             _isDirty = false;
+        }
+
+        public void Dispose()
+        {
+            _context.TimingToDirtySignalsDict[Timing].Remove(this);
         }
     }
 }

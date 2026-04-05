@@ -43,6 +43,7 @@ namespace Coft.Signals
         public void Dispose()
         {
             _effect.Dispose();
+            _list.Dispose();
         }
 
         public List<TOut> Peek()
