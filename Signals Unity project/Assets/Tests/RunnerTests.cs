@@ -151,6 +151,72 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
+        public void Runner_EffectCreatedInsideEffect_Runs()
+        {
+            var context = new SignalContext();
+            var innerRan = false;
+            var outerRan = false;
+            context.Effect(DefaultTiming, () =>
+            {
+                if (outerRan)
+                {
+                    return;
+                }
+
+                outerRan = true;
+
+                context.Effect(DefaultTiming, () =>
+                {
+                    innerRan = true;
+                });
+            });
+
+            context.Update(DefaultTiming);
+
+            Assert.IsTrue(innerRan);
+        }
+
+        [Test]
+        public void Runner_ComputedCreatedInsideEffect_HasValueAfterUpdate()
+        {
+            var context = new SignalContext();
+            Computed<int> inner = null;
+            context.Effect(DefaultTiming, () =>
+            {
+                inner ??= context.Computed(DefaultTiming, () => 42);
+            });
+
+            context.Update(DefaultTiming);
+
+            Assert.IsNotNull(inner);
+            Assert.AreEqual(42, inner.Value);
+        }
+
+        [Test]
+        public void Runner_EffectCreatedInsideEffect_ReactsToLaterSignalChanges()
+        {
+            var context = new SignalContext();
+            var signal = context.Signal(DefaultTiming, 0);
+            var innerRuns = 0;
+            Effect inner = null;
+            context.Effect(DefaultTiming, () =>
+            {
+                inner ??= context.Effect(DefaultTiming, () =>
+                {
+                    _ = signal.Value;
+                    innerRuns++;
+                });
+            });
+
+            context.Update(DefaultTiming);
+            Assert.AreEqual(1, innerRuns, "inner effect should run once after creation");
+
+            signal.Value = 1;
+            context.Update(DefaultTiming);
+            Assert.AreEqual(2, innerRuns, "inner effect should re-run when its dep changes");
+        }
+
+        [Test]
         public void Signal_ReadOutsideEffect_DoesNotRegisterSpuriousDependency()
         {
             var context = new SignalContext();

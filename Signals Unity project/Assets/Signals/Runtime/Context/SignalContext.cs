@@ -14,6 +14,7 @@ namespace Coft.Signals
         private readonly List<IUntypedComputed> _levelBuffer = new();
         private readonly HashSet<IUntypedComputed> _committed = new();
         private readonly HashSet<Effect> _deferredEffects = new();
+        private readonly List<Effect> _effectBuffer = new();
         private readonly List<string> _errors = new();
 
         private void InitializeTiming(int timing)
@@ -70,7 +71,9 @@ namespace Coft.Signals
                 FlushComputeds(timing, _errors);
                 FlushEffects(timing, _errors);
 
-                if (TimingToDirtySignalsDict[timing].Count == 0)
+                if (TimingToDirtySignalsDict[timing].Count == 0
+                    && TimingToDirtyEffectsDict[timing].Count == 0
+                    && CountDirty(_dirtyComputeds[timing]) == 0)
                 {
                     break;
                 }
@@ -164,10 +167,19 @@ namespace Coft.Signals
 
         private void FlushEffects(int timing, List<string> errors)
         {
-            _deferredEffects.Clear();
+            var dirtySet = TimingToDirtyEffectsDict[timing];
             var dirtySignals = TimingToDirtySignalsDict[timing];
 
-            foreach (var effect in TimingToDirtyEffectsDict[timing])
+            _effectBuffer.Clear();
+            foreach (var effect in dirtySet)
+            {
+                _effectBuffer.Add(effect);
+            }
+            dirtySet.Clear();
+
+            _deferredEffects.Clear();
+
+            foreach (var effect in _effectBuffer)
             {
                 if (HasDirtySignalDep(effect, dirtySignals))
                 {
@@ -185,8 +197,7 @@ namespace Coft.Signals
                 }
             }
 
-            TimingToDirtyEffectsDict[timing].Clear();
-            TimingToDirtyEffectsDict[timing].UnionWith(_deferredEffects);
+            dirtySet.UnionWith(_deferredEffects);
         }
 
         private void CommitComputed(IUntypedComputed computed, List<HashSet<IUntypedComputed>> buckets, int timing)
