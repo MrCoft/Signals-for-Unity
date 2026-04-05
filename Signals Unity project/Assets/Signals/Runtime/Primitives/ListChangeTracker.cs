@@ -14,6 +14,7 @@ namespace Coft.Signals
 
         public List<T> Added = new();
         public List<T> Removed = new();
+        public IReadOnlyList<T> List;
 
         private HashSet<T> _lastSnapshot = new();
         private HashSet<T> _currentSnapshot = new();
@@ -24,11 +25,11 @@ namespace Coft.Signals
             Removed.Clear();
             _currentSnapshot.Clear();
 
-            var list = _getter();
+            List = _getter();
 
-            for (var i = 0; i < list.Count; i++)
+            for (var i = 0; i < List.Count; i++)
             {
-                var item = list[i];
+                var item = List[i];
                 _currentSnapshot.Add(item);
 
                 if (!_lastSnapshot.Contains(item))
