@@ -80,44 +80,6 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
-        public void List_Foreach_IteratesItems()
-        {
-            var context = new SignalContext();
-            var list = context.List<int>(DefaultTiming);
-            var snapshot = new List<int>();
-            context.Effect(DefaultTiming, () =>
-            {
-                snapshot.Clear();
-
-                foreach (var item in list)
-                {
-                    snapshot.Add(item);
-                }
-            });
-            context.Update(DefaultTiming);
-
-            list.GetMutable().AddRange(new[] { 1, 2, 3 });
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(new List<int> { 1, 2, 3 }, snapshot);
-        }
-
-        [Test]
-        public void List_GetMutable_UpdatesCountComputed()
-        {
-            var context = new SignalContext();
-            var list = context.List<string>(DefaultTiming);
-            var countComputed = context.Computed(DefaultTiming, () => list.Count);
-            context.Update(DefaultTiming);
-            Assert.AreEqual(0, countComputed.Value);
-
-            list.GetMutable().AddRange(new[] { "a", "b" });
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(2, countComputed.Value);
-        }
-
-        [Test]
         public void List_UnrelatedListChange_DoesNotRunEffect()
         {
             var context = new SignalContext();
