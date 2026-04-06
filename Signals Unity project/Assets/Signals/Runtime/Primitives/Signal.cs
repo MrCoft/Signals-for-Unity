@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class Signal<T> : IUntypedSignal, ISignal<T>
+    public class Signal<T> : IUntypedSignal, ISignal<T>, IDisposable
     {
         private readonly SignalContext _context;
         private readonly IEqualityComparer<T> _comparer;
@@ -83,6 +84,11 @@ namespace Coft.Signals
             HasChangedThisPass = _isDirty;
             _committedValue = _pendingValue;
             _isDirty = false;
+        }
+
+        public void Dispose()
+        {
+            _context.TimingToDirtySignalsDict[Timing].Remove(this);
         }
     }
 }
