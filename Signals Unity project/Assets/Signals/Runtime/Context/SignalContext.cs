@@ -164,10 +164,6 @@ namespace Coft.Signals
                 }
             }
 
-            foreach (var bucket in buckets)
-            {
-                bucket.Clear();
-            }
         }
 
         private void FlushEffects(int timing, List<string> errors)

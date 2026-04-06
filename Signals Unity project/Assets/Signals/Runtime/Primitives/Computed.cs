@@ -81,7 +81,7 @@ namespace Coft.Signals
             {
                 _pendingValue = _getter();
             }
-            catch (Exception e)
+            catch
             {
                 Dependencies.UnionWith(previousDeps);
 
@@ -90,7 +90,7 @@ namespace Coft.Signals
                     signal.ComputedSubscribers.Add(this);
                 }
 
-                throw e;
+                throw;
             }
 
             Dependencies.UnionWith(_context.DependenciesCollector);

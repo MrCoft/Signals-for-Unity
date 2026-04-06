@@ -48,7 +48,7 @@ namespace Coft.Signals
             {
                 _action();
             }
-            catch (Exception e)
+            catch
             {
                 Dependencies.UnionWith(previousDeps);
 
@@ -57,7 +57,7 @@ namespace Coft.Signals
                     signal.EffectSubscribers.Add(this);
                 }
 
-                throw e;
+                throw;
             }
 
             foreach (var signal in _context.DependenciesCollector)
