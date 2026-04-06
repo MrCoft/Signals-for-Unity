@@ -41,12 +41,18 @@ namespace Coft.Signals
             return _signal.PeekLatest();
         }
 
-        public T GetMutable()
+        public T GetMutableUninitialized()
         {
             var committed = _signal.Peek();
             var mutable = ReferenceEquals(committed, _value1) ? _value2 : _value1;
-            _copyFrom(mutable, committed);
             _signal.Value = mutable;
+            return mutable;
+        }
+
+        public T GetMutable()
+        {
+            var mutable = GetMutableUninitialized();
+            _copyFrom(mutable, _signal.Peek());
             return mutable;
         }
     }

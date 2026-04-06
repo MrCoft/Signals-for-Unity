@@ -29,7 +29,7 @@ namespace Coft.Signals
                     mapping[item] = map(item);
                 }
 
-                var mutable = _list.GetMutable();
+                var mutable = _list.GetMutableUninitialized();
                 mutable.Clear();
 
                 for (var i = 0; i < tracker.List.Count; i++)
