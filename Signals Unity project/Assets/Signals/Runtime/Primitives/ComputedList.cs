@@ -1,12 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Coft.Signals
 {
-    public class ComputedList<TIn, TOut> : ISignalList<TOut>, IDisposable
+    public class ComputedList<TIn, TOut> : ISignal<List<TOut>>, IDisposable
     {
-        private readonly SignalList<TOut> _list;
+        private readonly SignalObject<List<TOut>> _list;
         private readonly Effect _effect;
 
         public ComputedList(SignalContext context, int timing, Func<IReadOnlyList<TIn>> sourceGetter, Func<TIn, TOut> map)
@@ -46,6 +45,14 @@ namespace Coft.Signals
             _list.Dispose();
         }
 
+        public List<TOut> Value
+        {
+            get
+            {
+                return _list.Value;
+            }
+        }
+
         public List<TOut> Peek()
         {
             return _list.Peek();
@@ -54,39 +61,6 @@ namespace Coft.Signals
         public List<TOut> PeekLatest()
         {
             return _list.PeekLatest();
-        }
-
-        // IReadOnlyList<T> implementation
-
-        public int Count
-        {
-            get
-            {
-                return _list.Count;
-            }
-        }
-
-        public TOut this[int index]
-        {
-            get
-            {
-                return _list[index];
-            }
-        }
-
-        public List<TOut>.Enumerator GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
-
-        IEnumerator<TOut> IEnumerable<TOut>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

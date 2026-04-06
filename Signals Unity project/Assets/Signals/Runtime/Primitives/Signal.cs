@@ -35,9 +35,20 @@ namespace Coft.Signals
             _pendingValue = value;
         }
 
-        public T Peek() => _committedValue;
+        public void Dispose()
+        {
+            _context.TimingToDirtySignalsDict[Timing].Remove(this);
+        }
 
-        public T PeekLatest() => _pendingValue;
+        public T Peek()
+        {
+            return _committedValue;
+        }
+
+        public T PeekLatest()
+        {
+            return _pendingValue;
+        }
 
         public T Value
         {
@@ -84,11 +95,6 @@ namespace Coft.Signals
             HasChangedThisPass = _isDirty;
             _committedValue = _pendingValue;
             _isDirty = false;
-        }
-
-        public void Dispose()
-        {
-            _context.TimingToDirtySignalsDict[Timing].Remove(this);
         }
     }
 }

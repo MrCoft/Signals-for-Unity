@@ -10,12 +10,17 @@ namespace Coft.Signals
         private readonly T _value2;
         private readonly Action<T, T> _copyFrom;
 
-        public SignalObject(SignalContext context, int timing, T value, Action<T, T> copyFrom)
+        public SignalObject(SignalContext context, int timing, Action<T, T> copyFrom, T value)
         {
             _signal = context.Signal(timing, value);
             _value1 = _signal.Peek();
             _value2 = new();
             _copyFrom = copyFrom;
+        }
+
+        public void Dispose()
+        {
+            _signal.Dispose();
         }
 
         public T Value
@@ -43,11 +48,6 @@ namespace Coft.Signals
             _copyFrom(mutable, committed);
             _signal.Value = mutable;
             return mutable;
-        }
-
-        public void Dispose()
-        {
-            _signal.Dispose();
         }
     }
 }

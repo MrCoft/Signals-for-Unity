@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Coft.Signals.Tests
 {
@@ -15,10 +14,10 @@ namespace Coft.Signals.Tests
             context.Update(DefaultTiming);
 
             list.GetMutable().Add(1);
-            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(0, list.Value.Count);
 
             context.Update(DefaultTiming);
-            Assert.AreEqual(1, list.Count);
+            Assert.AreEqual(1, list.Value.Count);
         }
 
         [Test]
@@ -29,7 +28,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             context.Effect(DefaultTiming, () =>
             {
-                _ = list.Count;
+                _ = list.Value.Count;
                 runs++;
             });
             context.Update(DefaultTiming);
@@ -46,7 +45,10 @@ namespace Coft.Signals.Tests
         {
             var context = new SignalContext();
             var list = context.List<int>(DefaultTiming);
-            list.GetMutable().AddRange(new[] { 1, 2, 3 });
+            list.GetMutable().AddRange(new[]
+            {
+                1, 2, 3
+            });
             context.Update(DefaultTiming);
 
             var first = list.GetMutable();
@@ -65,7 +67,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             context.Effect(DefaultTiming, () =>
             {
-                _ = list.Count;
+                _ = list.Value.Count;
                 runs++;
             });
             context.Update(DefaultTiming);
@@ -88,7 +90,7 @@ namespace Coft.Signals.Tests
             var runs = 0;
             context.Effect(DefaultTiming, () =>
             {
-                _ = list.Count;
+                _ = list.Value.Count;
                 runs++;
             });
             context.Update(DefaultTiming);
@@ -107,7 +109,7 @@ namespace Coft.Signals.Tests
         {
             var context = new SignalContext();
             var list = context.List<int>(1);
-            var count = context.Computed(3, () => list.Count);
+            var count = context.Computed(3, () => list.Value.Count);
             context.Update(1);
             context.Update(3);
 
@@ -125,7 +127,7 @@ namespace Coft.Signals.Tests
             var context = new SignalContext();
             var list = context.List<int>(1);
             var snapshot = 0;
-            context.Effect(3, () => snapshot = list.Count);
+            context.Effect(3, () => snapshot = list.Value.Count);
             context.Update(1);
             context.Update(3);
 

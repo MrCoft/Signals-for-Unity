@@ -45,10 +45,15 @@ namespace Coft.Signals
             return new(this, timing, action);
         }
 
-        public SignalList<T> List<T>(int timing)
+        public SignalObject<T> Object<T>(int timing, Action<T, T> copyFrom, T value)
+            where T : class, new()
         {
-            InitializeTiming(timing);
-            return new(this, timing);
+            return new(this, timing, copyFrom, value);
+        }
+
+        public SignalObject<List<T>> List<T>(int timing)
+        {
+            return SignalList<T>.Create(this, timing);
         }
 
         public ComputedList<TIn, TOut> ComputedList<TIn, TOut>(int timing, Func<IReadOnlyList<TIn>> sourceGetter, Func<TIn, TOut> map)
