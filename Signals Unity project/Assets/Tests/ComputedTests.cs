@@ -175,6 +175,25 @@ namespace Coft.Signals.Tests
         }
 
         [Test]
+        public void Computed_CreatedDuringFlush_EvaluatesOnSameUpdate()
+        {
+            var context = new SignalContext();
+            var source = context.Signal(DefaultTiming, 42);
+            Computed<int> inner = null;
+
+            var outer = context.Computed(DefaultTiming, () =>
+            {
+                inner ??= context.Computed(DefaultTiming, () => source.Value * 2);
+                return inner.Value;
+            });
+
+            context.Update(DefaultTiming);
+
+            Assert.AreEqual(84, outer.Value);
+            Assert.AreEqual(84, inner.Value);
+        }
+
+        [Test]
         public void Computed_Peek_DoesNotRegisterDependency()
         {
             var context = new SignalContext();
