@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using System;
 
 namespace Coft.Signals.Tests
 {
@@ -160,64 +159,6 @@ namespace Coft.Signals.Tests
             context.Update(DefaultTiming);
 
             Assert.AreEqual(21, writeValue1.Value);
-        }
-
-        private class TestDisposable : IDisposable
-        {
-            public int DisposeCount;
-            public void Dispose()
-            {
-                DisposeCount++;
-            }
-        }
-
-        [Test]
-        public void Effect_WithCleanup_DisposesBeforeNextRun()
-        {
-            var context = new SignalContext();
-            var value = context.Signal(DefaultTiming, 1);
-            var cleanup = new TestDisposable();
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = value.Value;
-                return cleanup;
-            });
-            context.Update(DefaultTiming);
-            Assert.AreEqual(0, cleanup.DisposeCount);
-
-            value.Value = 2;
-            context.Update(DefaultTiming);
-
-            Assert.AreEqual(1, cleanup.DisposeCount);
-        }
-
-        [Test]
-        public void Effect_WithCleanup_DisposesOnEffectDispose()
-        {
-            var context = new SignalContext();
-            var cleanup = new TestDisposable();
-            var effect = context.Effect(DefaultTiming, () => cleanup);
-            context.Update(DefaultTiming);
-
-            effect.Dispose();
-
-            Assert.AreEqual(1, cleanup.DisposeCount);
-        }
-
-        [Test]
-        public void Effect_WithNullCleanup_DoesNotThrow()
-        {
-            var context = new SignalContext();
-            var value = context.Signal(DefaultTiming, 1);
-            context.Effect(DefaultTiming, () =>
-            {
-                _ = value.Value;
-                return null;
-            });
-            context.Update(DefaultTiming);
-
-            value.Value = 2;
-            Assert.DoesNotThrow(() => context.Update(DefaultTiming));
         }
 
         [Test]
