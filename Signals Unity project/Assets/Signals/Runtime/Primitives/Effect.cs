@@ -6,15 +6,13 @@ namespace Coft.Signals
     public class Effect : IDisposable
     {
         private readonly SignalContext _context;
-        private readonly Func<IDisposable> _action;
-
-        private IDisposable _cleanup;
+        private readonly Action _action;
 
         public int Timing;
 
         public HashSet<IUntypedSignal> Dependencies = new();
 
-        public Effect(SignalContext context, int timing, Func<IDisposable> action)
+        public Effect(SignalContext context, int timing, Action action)
         {
             _context = context;
             _action = action;
@@ -25,9 +23,6 @@ namespace Coft.Signals
 
         public void Dispose()
         {
-            _cleanup?.Dispose();
-            _cleanup = null;
-
             _context.TimingToDirtyEffectsDict[Timing].Remove(this);
 
             foreach (var signal in Dependencies)
@@ -38,9 +33,6 @@ namespace Coft.Signals
 
         public void Run()
         {
-            _cleanup?.Dispose();
-            _cleanup = null;
-
             foreach (var signal in Dependencies)
             {
                 signal.EffectSubscribers.Remove(this);
@@ -54,7 +46,7 @@ namespace Coft.Signals
 
             try
             {
-                _cleanup = _action();
+                _action();
             }
             catch
             {

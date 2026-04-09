@@ -42,12 +42,6 @@ namespace Coft.Signals
         public Effect Effect(int timing, Action action)
         {
             InitializeTiming(timing);
-            return new(this, timing, () => { action(); return null; });
-        }
-
-        public Effect Effect(int timing, Func<IDisposable> action)
-        {
-            InitializeTiming(timing);
             return new(this, timing, action);
         }
 
