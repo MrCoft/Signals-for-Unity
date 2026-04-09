@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Coft.Signals
+﻿namespace Coft.Signals
 {
     public interface IUntypedSignal
     {
@@ -9,7 +7,7 @@ namespace Coft.Signals
         bool HasChangedThisPass { get; }
         
         void Update();
-        HashSet<IUntypedComputed> ComputedSubscribers { get; }
-        HashSet<Effect> EffectSubscribers { get; }
+        WeakHashSet<IUntypedComputed> ComputedSubscribers { get; }
+        WeakHashSet<Effect> EffectSubscribers { get; }
     }
 }

@@ -23,8 +23,8 @@ namespace Coft.Signals
         }
         public bool IsReady { get; set; } = true;
         public bool HasChangedThisPass { get; set; }
-        public HashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
-        public HashSet<Effect> EffectSubscribers { get; } = new();
+        public WeakHashSet<IUntypedComputed> ComputedSubscribers { get; } = new();
+        public WeakHashSet<Effect> EffectSubscribers { get; } = new();
 
         public Signal(SignalContext context, int timing, T value = default, IEqualityComparer<T> comparer = null)
         {
