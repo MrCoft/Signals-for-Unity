@@ -30,7 +30,11 @@ namespace Coft.Signals
             for (var i = 0; i < List.Count; i++)
             {
                 var item = List[i];
-                _currentSnapshot.Add(item);
+
+                if (!_currentSnapshot.Add(item))
+                {
+                    throw new InvalidOperationException($"ListChangeTracker<{typeof(T).Name}> requires unique items; duplicate detected: {item}");
+                }
 
                 if (!_lastSnapshot.Contains(item))
                 {
