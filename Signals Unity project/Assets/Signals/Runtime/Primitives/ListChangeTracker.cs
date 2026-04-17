@@ -25,7 +25,7 @@ namespace Coft.Signals
             Removed.Clear();
             _currentSnapshot.Clear();
 
-            List = _getter();
+            List = _getter() ?? Array.Empty<T>();
 
             for (var i = 0; i < List.Count; i++)
             {
