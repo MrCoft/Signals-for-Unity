@@ -9,6 +9,7 @@ namespace Coft.Signals
         public HashSet<IUntypedSignal> PreviousDependencies = new();
         public Dictionary<int, HashSet<IUntypedSignal>> TimingToDirtySignalsDict = new();
         public Dictionary<int, HashSet<Effect>> TimingToDirtyEffectsDict = new();
+        public Dictionary<int, Queue<Action>> TimingToOneTimeEffectsDict = new();
 
         private readonly Dictionary<int, List<HashSet<IUntypedComputed>>> _dirtyComputeds = new();
         private readonly List<IUntypedComputed> _levelBuffer = new();
@@ -23,6 +24,7 @@ namespace Coft.Signals
             {
                 TimingToDirtySignalsDict.Add(timing, new());
                 TimingToDirtyEffectsDict.Add(timing, new());
+                TimingToOneTimeEffectsDict.Add(timing, new());
                 _dirtyComputeds.Add(timing, new());
             }
         }
@@ -43,6 +45,12 @@ namespace Coft.Signals
         {
             InitializeTiming(timing);
             return new(this, timing, action);
+        }
+
+        public void OneTimeEffect(int timing, Action action)
+        {
+            InitializeTiming(timing);
+            TimingToOneTimeEffectsDict[timing].Enqueue(action);
         }
 
         public SignalObject<T> Object<T>(int timing, Action<T, T> copyFrom, T value)
@@ -76,12 +84,22 @@ namespace Coft.Signals
                 FlushComputeds(timing, _errors);
                 FlushEffects(timing, _errors);
 
-                if (TimingToDirtySignalsDict[timing].Count == 0
+                var reactiveSettled =
+                    TimingToDirtySignalsDict[timing].Count == 0
                     && TimingToDirtyEffectsDict[timing].Count == 0
-                    && CountDirty(_dirtyComputeds[timing]) == 0)
+                    && CountDirty(_dirtyComputeds[timing]) == 0;
+
+                if (!reactiveSettled)
+                {
+                    continue;
+                }
+
+                if (TimingToOneTimeEffectsDict[timing].Count == 0)
                 {
                     break;
                 }
+
+                RunOneTimeEffect(timing, _errors);
             }
 
             if (TimingToDirtySignalsDict[timing].Count > 0)
@@ -164,6 +182,20 @@ namespace Coft.Signals
                 }
             }
 
+        }
+
+        private void RunOneTimeEffect(int timing, List<string> errors)
+        {
+            var action = TimingToOneTimeEffectsDict[timing].Dequeue();
+
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                errors.Add(e.ToString());
+            }
         }
 
         private void FlushEffects(int timing, List<string> errors)
